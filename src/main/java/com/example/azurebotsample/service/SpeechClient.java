@@ -1,17 +1,21 @@
 package com.example.azurebotsample.service;
 
 import com.microsoft.cognitiveservices.speech.*;
+import com.microsoft.cognitiveservices.speech.audio.AudioConfig;
+import com.microsoft.cognitiveservices.speech.audio.PullAudioOutputStream;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.Future;
 
+import static com.microsoft.cognitiveservices.speech.util.SafeHandleType.AudioConfig;
+
 @Service
 @Slf4j
 @NoArgsConstructor
 public class SpeechClient {
-    private final String speechSubscriptionKey = "placedholder";
+    private final String speechSubscriptionKey = "5Clm4YR3KFhmDb1WfVa5cnTXPyDffNmxJsNC0RNcJWpfgu26yZWGJQQJ99BDACqBBLyXJ3w3AAAYACOGEj7V";
     private final String resourceRegion = "southeastasia";
     private final String endpointUrl = "https://southeastasia.api.cognitive.microsoft.com/";
     private final String voiceModel = "en-SG-LunaNeural";
@@ -23,6 +27,9 @@ public class SpeechClient {
         try(SpeechConfig config = SpeechConfig.fromEndpoint(new java.net.URI(endpointUrl), speechSubscriptionKey)){
             // Set the voice name, refer to https://aka.ms/speech/voices/neural for full
             // list.
+            /*String file_name = "outputaudio.wav";
+            var file_config = com.microsoft.cognitiveservices.speech.audio.AudioConfig.fromDefaultMicrophoneInput(file_name);
+            var audio_config = AudioConfig.FromStreamOutput(new PullAudioOutputStream());*/
             config.setSpeechSynthesisVoiceName(voiceModel);
             config.setOutputFormat(OutputFormat.Simple);
             config.setSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Riff16Khz16BitMonoPcm);
