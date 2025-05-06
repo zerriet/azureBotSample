@@ -2,6 +2,7 @@ package com.example.azurebotsample.service;
 
 import com.microsoft.cognitiveservices.speech.*;
 import com.microsoft.cognitiveservices.speech.audio.AudioConfig;
+import com.microsoft.cognitiveservices.speech.audio.AudioOutputStream;
 import com.microsoft.cognitiveservices.speech.audio.PullAudioOutputStream;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,13 +28,15 @@ public class SpeechClient {
         try(SpeechConfig config = SpeechConfig.fromEndpoint(new java.net.URI(endpointUrl), speechSubscriptionKey)){
             // Set the voice name, refer to https://aka.ms/speech/voices/neural for full
             // list.
-            /*String file_name = "outputaudio.wav";
-            var file_config = com.microsoft.cognitiveservices.speech.audio.AudioConfig.fromDefaultMicrophoneInput(file_name);
-            var audio_config = AudioConfig.FromStreamOutput(new PullAudioOutputStream());*/
+            String file_name = "outputaudio.wav";
+            com.microsoft.cognitiveservices.speech.audio.AudioConfig audioConfig = com.microsoft.cognitiveservices.speech.audio.AudioConfig.fromStreamOutput(AudioOutputStream.createPullStream());
+//            var file_config = com.microsoft.cognitiveservices.speech.audio.AudioConfig.fromStreamOutput(new PullAudioOutputStream(0));
+//            com.microsoft.cognitiveservices.speech.audio.AudioConfig audioConfig;
+//            var audio_config = AudioConfig.FromStreamOutput(file_config);
             config.setSpeechSynthesisVoiceName(voiceModel);
             config.setOutputFormat(OutputFormat.Simple);
             config.setSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Riff16Khz16BitMonoPcm);
-            try (SpeechSynthesizer synth = new SpeechSynthesizer(config)){
+            try (SpeechSynthesizer synth = new SpeechSynthesizer(config,audioConfig)){
                 assert (config != null);
                 assert (synth != null);
 

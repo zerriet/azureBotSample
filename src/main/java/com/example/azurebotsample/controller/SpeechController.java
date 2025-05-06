@@ -33,7 +33,7 @@ public class SpeechController {
             System.out.println("Request text :"+ payload.getSpeechText());
             // Set the Content-Type to indicate that the body contains WAV audio.
             byte[] audioBytes = speechClient.generateResponse(payload.getSpeechText());
-            System.out.println(Arrays.toString(audioBytes));
+            System.out.println("Audiobytes array length: "+audioBytes.length);
             responseHeaders.setContentType(MediaType.valueOf("audio/wav"));
             // Optionally, set the Content-Length header (good practice)
             /*responseHeaders.setContentLength(audioBytes.length);*/
