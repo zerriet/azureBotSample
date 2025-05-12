@@ -1,13 +1,20 @@
 package com.example.azurebotsample.service;
 
+import com.example.azurebotsample.model.xml.MsttsExpressAs;
+import com.example.azurebotsample.model.xml.Speak;
+import com.example.azurebotsample.model.xml.Voice;
 import com.microsoft.cognitiveservices.speech.*;
 import com.microsoft.cognitiveservices.speech.audio.AudioConfig;
 import com.microsoft.cognitiveservices.speech.audio.AudioOutputStream;
 import com.microsoft.cognitiveservices.speech.audio.PullAudioOutputStream;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.StringWriter;
 import java.util.concurrent.Future;
 
 import static com.microsoft.cognitiveservices.speech.util.SafeHandleType.AudioConfig;
@@ -19,7 +26,12 @@ public class SpeechClient {
     private final String speechSubscriptionKey = "5Clm4YR3KFhmDb1WfVa5cnTXPyDffNmxJsNC0RNcJWpfgu26yZWGJQQJ99BDACqBBLyXJ3w3AAAYACOGEj7V";
     private final String resourceRegion = "southeastasia";
     private final String endpointUrl = "https://southeastasia.api.cognitive.microsoft.com/";
-    private final String voiceModel = "en-SG-LunaNeural";
+    private final String voiceModel = "zh-CN-XiaomoNeural";
+    private final String lang = "zh-CN";
+    private final String style = "customerservice";
+    private final String role = "Girl";
+    private final String styleDegree = "2";
+
 
     public byte[] generateResponse(String responsePayload){
         // Creates an instance of a speech synthesizer using speech configuration with
@@ -43,7 +55,10 @@ public class SpeechClient {
                 int exitCode = 1;
 
                 log.info("Sending payload to speech service : {}",responsePayload);
-                Future<SpeechSynthesisResult> task = synth.SpeakTextAsync(responsePayload);
+//                Future<SpeechSynthesisResult> task = synth.SpeakTextAsync(responsePayload);
+                //generate SSML payload for synthesiser from input
+                String xmlInputPayload = generateXMLPayload(responsePayload);
+                Future<SpeechSynthesisResult> task = synth.SpeakSsmlAsync(xmlInputPayload);
 
                 SpeechSynthesisResult result = task.get();
                 assert (result != null);
@@ -72,6 +87,35 @@ public class SpeechClient {
         } catch (Exception e) {
             log.info("Unhandled exception : {}", e.getMessage());
             return null;
+        }
+    }
+
+    private String generateXMLPayload(String inputPayload){
+        try{
+            //create MsttsExpressAs object
+            MsttsExpressAs msttsExpressAs = new MsttsExpressAs(style,styleDegree,inputPayload);
+            // Create Voice object
+            Voice voice = new Voice(voiceModel, msttsExpressAs);
+            // Create Speak object
+            Speak speak = new Speak("1.0", lang, voice);
+            // Create JAXBContext
+            JAXBContext context = JAXBContext.newInstance(Speak.class);
+            // Create Marshaller
+            Marshaller marshaller = context.createMarshaller();
+            // Set Marshaller properties for pretty printing
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            // To include the XML declaration (<?xml version="1.0" encoding="UTF-8" standalone="yes"?>)
+            // This is usually default, but can be explicitly set:
+            // marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.FALSE);
+            // Marshal to StringWriter (or System.out, FileOutputStream, etc.)
+            StringWriter stringWriter = new StringWriter();
+            marshaller.marshal(speak, stringWriter);
+            // Print the XML
+            String xmlOutput = stringWriter.toString();
+            System.out.println("XML output : "+xmlOutput);
+            return xmlOutput;
+        }catch (JAXBException e) {
+            throw new RuntimeException(e);
         }
     }
 }

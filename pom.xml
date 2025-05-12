@@ -28,6 +28,8 @@
     <properties>
         <java.version>21</java.version>
         <azure-speech-client.version>1.43.0</azure-speech-client.version>
+        <jakarta-xml.version>4.0.2</jakarta-xml.version>
+        <jaxb-impl.version>4.0.5</jaxb-impl.version>
     </properties>
     <dependencies>
         <dependency>
@@ -55,6 +57,17 @@
             <groupId>com.microsoft.cognitiveservices.speech</groupId>
             <artifactId>client-sdk</artifactId>
             <version>${azure-speech-client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${jakarta-xml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxb-impl.version}</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
