@@ -23,26 +23,73 @@ public class OpenAIAssistantService {
     @Value("${openai.assistant_id}")
     private String assistantId;
 
+    @Value("${openai.vector_store}") // Ensure this value is set correctly
+    private String vectorStoreId;
+
     private final OkHttpClient client = new OkHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
 
     public String getAssistantReply(String userMessage) throws Exception {
-        // 1. Create thread
-        Request threadRequest = new Request.Builder()
-                .url(endpoint + "/openai/assistants/v1/threads")
-                .post(RequestBody.create("", MediaType.parse("application/json")))
+        // Step 1: Create assistant
+        String assistantPayload = String.format("""
+            {
+                "model": "virtual-avatar-gpt-mini",
+                "name": "yy testing",
+                "instructions": "Your primary responsibility is to act as a friend to a Gen Alpha user...",
+                "tools": [{"type": "file_search"}],
+                "tool_resources": {
+                    "file_search": {
+                        "vector_store_ids": ["%s"]
+                    }
+                },
+                "temperature": 1,
+                "top_p": 1
+            }
+        """, vectorStoreId);
+
+        Request assistantRequest = new Request.Builder()
+                .url(endpoint + "/openai/assistants/v1/assistants?api-version=" + apiVersion)
                 .addHeader("Authorization", "Bearer " + apiKey)
+                .addHeader("Content-Type", "application/json")
                 .addHeader("OpenAI-Beta", "assistants=v1")
+                .post(RequestBody.create(assistantPayload, MediaType.parse("application/json")))
+                .build();
+
+        // Log request for debugging
+        System.out.println("Request to create assistant: " + assistantRequest.url());
+
+        Response assistantResponse = client.newCall(assistantRequest).execute();
+        JsonNode assistantJson = mapper.readTree(assistantResponse.body().string());
+        String assistantId = assistantJson.path("id").asText();
+
+        // Log response for debugging
+        System.out.println("Assistant Response: " + assistantJson.toPrettyString());
+
+        if (assistantId == null || assistantId.isEmpty()) {
+            throw new RuntimeException("Failed to create assistant: " + assistantJson.toPrettyString());
+        }
+
+        // Step 2: Create thread
+        Request threadRequest = new Request.Builder()
+                .url(endpoint + "/openai/assistants/v1/threads?api-version=" + apiVersion)
+                .addHeader("Authorization", "Bearer " + apiKey)
+                .addHeader("Content-Type", "application/json")
+                .addHeader("OpenAI-Beta", "assistants=v1")
+                .post(RequestBody.create("{}", MediaType.parse("application/json")))
                 .build();
 
         Response threadResponse = client.newCall(threadRequest).execute();
         JsonNode threadJson = mapper.readTree(threadResponse.body().string());
-        String threadId = threadJson.path("id").asText(null); // Returns null if "id" is not found
-            if (threadId == null) {
-                throw new RuntimeException("Thread ID not found in response: " + threadJson.toString());
-            }
+        String threadId = threadJson.path("id").asText();
 
-        // 2. Add message
+        // Log thread creation response
+        System.out.println("Thread Response: " + threadJson.toPrettyString());
+
+        if (threadId == null || threadId.isEmpty()) {
+            throw new RuntimeException("Failed to create thread: " + threadJson.toPrettyString());
+        }
+
+        // Step 3: Add message to thread
         String messageBody = "{\"role\": \"user\", \"content\": \"" + userMessage + "\"}";
         Request messageRequest = new Request.Builder()
                 .url(endpoint + "/openai/assistants/v1/threads/" + threadId + "/messages")
@@ -53,7 +100,7 @@ public class OpenAIAssistantService {
 
         client.newCall(messageRequest).execute();
 
-        // 3. Run assistant
+        // Step 4: Run assistant
         String runBody = "{\"assistant_id\": \"" + assistantId + "\"}";
         Request runRequest = new Request.Builder()
                 .url(endpoint + "/openai/assistants/v1/threads/" + threadId + "/runs")
@@ -64,12 +111,13 @@ public class OpenAIAssistantService {
 
         Response runResponse = client.newCall(runRequest).execute();
         JsonNode runJson = mapper.readTree(runResponse.body().string());
-        String runId = runJson.path("id").asText(null); // Returns null if "id" is not found
+        String runId = runJson.path("id").asText(null); 
+
         if (runId == null) {
             throw new RuntimeException("Run ID not found in response: " + runJson.toString());
         }
 
-        // 4. Poll for completion
+        // Step 5: Poll for completion
         String status = "queued";
         while (status.equals("queued") || status.equals("in_progress")) {
             Thread.sleep(1000);
@@ -84,7 +132,7 @@ public class OpenAIAssistantService {
             status = pollJson.get("status").asText();
         }
 
-        // 5. Get response message
+        // Step 6: Get the assistant's response message
         Request msgRequest = new Request.Builder()
                 .url(endpoint + "/openai/assistants/v1/threads/" + threadId + "/messages")
                 .get()

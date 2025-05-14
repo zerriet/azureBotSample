@@ -2,7 +2,6 @@ package com.example.azurebotsample.controller;
 
 import com.example.azurebotsample.service.OpenAIAssistantService;
 import com.example.azurebotsample.service.SpeechClient;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +11,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.Map;
 
 @RestController
@@ -37,27 +32,27 @@ public class AssistantSpeechController {
             // 1. Get assistant reply
             String assistantMessage = assistantService.getAssistantReply(userInput);
 
-            // 2. Convert to speech
+            // 2. Convert to speech (audio in raw format)
             byte[] audioBytes = speechClient.generateResponse(assistantMessage);
 
             // 3. Return JSON with base64 or raw audio
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_MIXED);
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             body.add("text", assistantMessage);
             body.add("audio", new ByteArrayResource(audioBytes) {
                 @Override
                 public String getFilename() {
-                    return "response.wav";
+                    return "response.wav"; // Filename for the audio response
                 }
             });
 
             return new ResponseEntity<>(body, headers, HttpStatus.OK);
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+            log.error("Error occurred while processing request", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
 }
