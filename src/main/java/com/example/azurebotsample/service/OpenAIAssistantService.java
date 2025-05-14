@@ -34,7 +34,7 @@ public class OpenAIAssistantService {
                 "tools": [{"type": "file_search"}],
                 "tool_resources": {
                     "file_search": {
-                        "vector_store_ids": ["%s"]
+                        "vector_store_ids": ["vs_iRFcdxoigsQgtgasBgCUWtq5"]
                     }
                 },
                 "temperature": 1.0,
