@@ -6,8 +6,6 @@ import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-
 @Service
 public class OpenAIAssistantService {
 
@@ -20,61 +18,48 @@ public class OpenAIAssistantService {
     @Value("${openai.api.version}")
     private String apiVersion;
 
-    @Value("${openai.assistant_id}")
-    private String assistantId;
-
-    @Value("${openai.vector_store}") // Ensure this value is set correctly
+    @Value("${openai.vector_store}")
     private String vectorStoreId;
 
     private final OkHttpClient client = new OkHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
 
     public String getAssistantReply(String userMessage) throws Exception {
-        // Step 1: Create assistant
+        // Step 1: Create Assistant
         String assistantPayload = String.format("""
             {
                 "model": "virtual-avatar-gpt-mini",
-                "name": "yy testing",
-                "instructions": "Your primary responsibility is to act as a friend to a Gen Alpha user...",
+                "name": "Aria Assistant",
+                "instructions": "You are Aria, a Gen Alpha companion...",
                 "tools": [{"type": "file_search"}],
                 "tool_resources": {
                     "file_search": {
                         "vector_store_ids": ["%s"]
                     }
                 },
-                "temperature": 1,
-                "top_p": 1
+                "temperature": 1.0,
+                "top_p": 1.0
             }
         """, vectorStoreId);
 
         Request assistantRequest = new Request.Builder()
-                .url(endpoint + "/openai/assistants/v1/assistants?api-version=" + apiVersion)
-                .addHeader("Authorization", "Bearer " + apiKey)
+                .url(endpoint + "/openai/assistants?api-version=" + apiVersion) // dont change this
+                .addHeader("api-key", apiKey)
                 .addHeader("Content-Type", "application/json")
-                .addHeader("OpenAI-Beta", "assistants=v1")
                 .post(RequestBody.create(assistantPayload, MediaType.parse("application/json")))
                 .build();
-
-        // Log request for debugging
-        System.out.println("Request to create assistant: " + assistantRequest.url());
 
         Response assistantResponse = client.newCall(assistantRequest).execute();
         JsonNode assistantJson = mapper.readTree(assistantResponse.body().string());
         String assistantId = assistantJson.path("id").asText();
 
-        // Log response for debugging
-        System.out.println("Assistant Response: " + assistantJson.toPrettyString());
+        System.out.println("Assistant created: " + assistantId);
 
-        if (assistantId == null || assistantId.isEmpty()) {
-            throw new RuntimeException("Failed to create assistant: " + assistantJson.toPrettyString());
-        }
-
-        // Step 2: Create thread
+        // Step 2: Create Thread
         Request threadRequest = new Request.Builder()
-                .url(endpoint + "/openai/assistants/v1/threads?api-version=" + apiVersion)
-                .addHeader("Authorization", "Bearer " + apiKey)
+                .url(endpoint + "/openai/threads?api-version=" + apiVersion)
+                .addHeader("api-key", apiKey)
                 .addHeader("Content-Type", "application/json")
-                .addHeader("OpenAI-Beta", "assistants=v1")
                 .post(RequestBody.create("{}", MediaType.parse("application/json")))
                 .build();
 
@@ -82,90 +67,81 @@ public class OpenAIAssistantService {
         JsonNode threadJson = mapper.readTree(threadResponse.body().string());
         String threadId = threadJson.path("id").asText();
 
-        // Log thread creation response
-        System.out.println("Thread Response: " + threadJson.toPrettyString());
+        System.out.println("Thread created: " + threadId);
 
-        if (threadId == null || threadId.isEmpty()) {
-            throw new RuntimeException("Failed to create thread: " + threadJson.toPrettyString());
-        }
+        // Step 3: Add user message to thread
+        String messageBody = String.format("""
+            {
+                "role": "user",
+                "content": "%s"
+            }
+        """, userMessage);
 
-        // Step 3: Add message to thread
-        String messageBody = "{\"role\": \"user\", \"content\": \"" + userMessage + "\"}";
         Request messageRequest = new Request.Builder()
-                .url(endpoint + "/openai/assistants/v1/threads/" + threadId + "/messages")
+                .url(endpoint + "/openai/threads/" + threadId + "/messages?api-version=" + apiVersion) // dont change this
+                .addHeader("api-key", apiKey)
+                .addHeader("Content-Type", "application/json")
                 .post(RequestBody.create(messageBody, MediaType.parse("application/json")))
-                .addHeader("Authorization", "Bearer " + apiKey)
-                .addHeader("OpenAI-Beta", "assistants=v1")
                 .build();
 
         client.newCall(messageRequest).execute();
 
-        // Step 4: Run assistant
-        String runBody = "{\"assistant_id\": \"" + assistantId + "\"}";
+        // Step 4: Run the assistant
+        String runBody = String.format("""
+            {
+                "assistant_id": "%s"
+            }
+        """, assistantId);
+
         Request runRequest = new Request.Builder()
-                .url(endpoint + "/openai/assistants/v1/threads/" + threadId + "/runs")
+                .url(endpoint + "/openai/threads/" + threadId + "/runs?api-version=" + apiVersion) // dont change this
+                .addHeader("api-key", apiKey)
+                .addHeader("Content-Type", "application/json")
                 .post(RequestBody.create(runBody, MediaType.parse("application/json")))
-                .addHeader("Authorization", "Bearer " + apiKey)
-                .addHeader("OpenAI-Beta", "assistants=v1")
                 .build();
 
         Response runResponse = client.newCall(runRequest).execute();
         JsonNode runJson = mapper.readTree(runResponse.body().string());
-        String runId = runJson.path("id").asText(null); 
+        String runId = runJson.path("id").asText();
 
-        if (runId == null) {
-            throw new RuntimeException("Run ID not found in response: " + runJson.toString());
-        }
+        System.out.println("Run started: " + runId);
 
-        // Step 5: Poll for completion
-        String status = "queued";
-        while (status.equals("queued") || status.equals("in_progress")) {
+        // Step 5: Poll until run completes
+        String status;
+        do {
             Thread.sleep(1000);
             Request pollRequest = new Request.Builder()
-                    .url(endpoint + "/openai/assistants/v1/threads/" + threadId + "/runs/" + runId)
+                    .url(endpoint + "/openai/threads/" + threadId + "/runs/" + runId + "?api-version=" + apiVersion) // dont change this
+                    .addHeader("api-key", apiKey)
                     .get()
-                    .addHeader("Authorization", "Bearer " + apiKey)
-                    .addHeader("OpenAI-Beta", "assistants=v1")
                     .build();
             Response pollResponse = client.newCall(pollRequest).execute();
             JsonNode pollJson = mapper.readTree(pollResponse.body().string());
-            status = pollJson.get("status").asText();
-        }
+            status = pollJson.path("status").asText();
+            System.out.println("Run status: " + status);
+        } while (status.equals("queued") || status.equals("in_progress"));
 
-        // Step 6: Get the assistant's response message
+        // Step 6: Get final assistant response
         Request msgRequest = new Request.Builder()
-                .url(endpoint + "/openai/assistants/v1/threads/" + threadId + "/messages")
+                .url(endpoint + "/openai/threads/" + threadId + "/messages?api-version=" + apiVersion) // dont change this
+                .addHeader("api-key", apiKey)
                 .get()
-                .addHeader("Authorization", "Bearer " + apiKey)
-                .addHeader("OpenAI-Beta", "assistants=v1")
                 .build();
 
         Response msgResponse = client.newCall(msgRequest).execute();
         JsonNode msgJson = mapper.readTree(msgResponse.body().string());
-
-        JsonNode dataArray = msgJson.get("data");
-        if (dataArray == null || !dataArray.isArray()) {
-            throw new RuntimeException(
-                    "Missing or invalid 'data' array in message response: " + msgJson.toPrettyString());
-        }
+        JsonNode dataArray = msgJson.path("data");
 
         for (JsonNode message : dataArray) {
-            JsonNode roleNode = message.get("role");
-            if (roleNode != null && "assistant".equals(roleNode.asText())) {
-                JsonNode contentArray = message.get("content");
-                if (contentArray != null && contentArray.isArray()) {
-                    for (JsonNode content : contentArray) {
-                        if ("text".equals(content.path("type").asText())) {
-                            JsonNode textNode = content.get("text");
-                            if (textNode != null && textNode.has("value")) {
-                                return textNode.get("value").asText();
-                            }
-                        }
+            if ("assistant".equals(message.path("role").asText())) {
+                for (JsonNode content : message.path("content")) {
+                    if ("text".equals(content.path("type").asText())) {
+                        return content.path("text").path("value").asText();
                     }
                 }
             }
         }
 
-        throw new RuntimeException("No valid assistant response found in: " + msgJson.toPrettyString());
+        throw new RuntimeException("No assistant reply found.");
     }
 }
