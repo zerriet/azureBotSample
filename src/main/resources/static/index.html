@@ -1,0 +1,56 @@
+<form id="speechForm">
+  <input type="text" id="speechText" placeholder="Ask Aria something..." size="50" />
+  <br><br>
+  <button type="submit">Ask</button>
+</form>
+
+<div id="responseBox" style="margin-top: 30px; display: none;">
+  <h3>Aria says:</h3>
+  <p id="responseText" style="font-size: 18px;"></p>
+  <audio id="audioPlayer" controls style="margin-top: 10px;"></audio>
+</div>
+
+<script>
+  const form = document.getElementById('speechForm');
+  const audioPlayer = document.getElementById('audioPlayer');
+  const responseBox = document.getElementById('responseBox');
+  const responseText = document.getElementById('responseText');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const userInput = document.getElementById('speechText').value;
+
+    const response = await fetch('/v1/ask-and-speak', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ text: userInput })
+    });
+
+    if (response.ok) {
+      const blob = await response.blob();
+      const contentType = response.headers.get("Content-Type");
+
+      if (contentType.includes("audio")) {
+        const url = URL.createObjectURL(blob);
+        responseText.textContent = "[audio only response]";
+        audioPlayer.src = url;
+        audioPlayer.style.display = 'block';
+        responseBox.style.display = 'block';
+        audioPlayer.play();
+      } else {
+        // If response is JSON with text + audio
+        const data = await response.json();
+        responseText.textContent = data.text;
+        const audioBlob = new Blob([data.audio], { type: 'audio/wav' });
+        const url = URL.createObjectURL(audioBlob);
+        audioPlayer.src = url;
+        audioPlayer.play();
+      }
+    } else {
+      alert("Failed to get response.");
+    }
+  });
+</script>
