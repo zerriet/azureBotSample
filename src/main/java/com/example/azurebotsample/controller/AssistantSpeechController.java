@@ -1,5 +1,7 @@
 package com.example.azurebotsample.controller;
 
+import com.example.azurebotsample.model.AuthResponse;
+import com.example.azurebotsample.service.AssistantService;
 import com.example.azurebotsample.service.OpenAIAssistantService;
 import com.example.azurebotsample.service.SpeechClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +25,9 @@ public class AssistantSpeechController {
 
     @Autowired
     private OpenAIAssistantService assistantService;
+
+    @Autowired
+    private AssistantService assistantServiceSdk;
 
     @PostMapping("/ask-and-speak")
     // public ResponseEntity<?> askAndSpeak(@RequestBody Map<String, String>
@@ -57,19 +62,37 @@ public class AssistantSpeechController {
     // + e.getMessage());
     // }
     // }
+
     public ResponseEntity<?> askAndSpeak(@RequestBody Map<String, String> request) {
         String userInput = request.get("text");
 
         try {
-            // Only get the assistant's reply
             String assistantMessage = assistantService.getAssistantReply(userInput);
-
-            // Return as plain JSON
             return ResponseEntity.ok(Map.of("text", assistantMessage));
         } catch (Exception e) {
             log.error("Error occurred while processing request", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("text", "Sorry, something went wrong."));
+        }
+    }
+
+    @PostMapping("/ask-and-speak-sdk")
+    public ResponseEntity<?> askAndSpeakSDK(@RequestBody Map<String, String> request) {
+        try {
+            String userInput = request.get("text");
+            String key = request.get("key");
+
+            AuthResponse auth = assistantServiceSdk.createAssistantAndThread(key);
+            if (!auth.getStatus().equals("OK")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("text", "Invalid API Key."));
+            }
+
+            String reply = assistantServiceSdk.chat(auth.getAssistantId(), auth.getThreadId(), userInput);
+            return ResponseEntity.ok(Map.of("text", reply));
+        } catch (Exception e) {
+            log.error("SDK Error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("text", "Error: " + e.getMessage()));
         }
     }
 }

@@ -25,6 +25,7 @@ public class AuthResponse {
     public String getAssistantId() {
         return assistantId;
     }
+  
 
     public void setAssistantId(String assistantId) {
         this.assistantId = assistantId;
@@ -36,5 +37,9 @@ public class AuthResponse {
 
     public void setThreadId(String threadId) {
         this.threadId = threadId;
+    }
+
+    public String getStatus() {
+        return "OK";
     }
 }

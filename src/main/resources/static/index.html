@@ -1,6 +1,11 @@
 <form id="speechForm">
   <input type="text" id="speechText" placeholder="Ask Aria something..." size="50" />
   <br><br>
+  <select id="method">
+    <option value="url">URL Method</option>
+    <option value="sdk">SDK Method</option>
+  </select>
+  <br><br>
   <button type="submit">Ask</button>
 </form>
 
@@ -17,22 +22,30 @@
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const userInput = document.getElementById('speechText').value;
+    const method = document.getElementById('method').value;
 
-    const response = await fetch('/v1/ask-and-speak', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ text: userInput })
-    });
+    const url = method === 'sdk' ? '/v1/ask-and-speak-sdk' : '/v1/ask-and-speak';
+    const payload = { text: userInput };
 
-    if (response.ok) {
-      const data = await response.json();
-      responseText.textContent = data.text;
-      responseBox.style.display = 'block';
-    } else {
-      responseText.textContent = "Something went wrong.";
-      responseBox.style.display = 'block';
+    if (method === 'sdk') {
+      payload.key = "1912766d6ba0e50e8b1bacfb51207e83b95b7ac0cd8ce15307cdf4965e7e3f6c"; // Optional API key
     }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      responseText.textContent = data.text || "Something went wrong.";
+    } catch (error) {
+      responseText.textContent = "Network error.";
+    }
+
+    responseBox.style.display = 'block';
   });
 </script>
