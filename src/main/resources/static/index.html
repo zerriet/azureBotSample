@@ -1,0 +1,103 @@
+<form id="speechForm">
+  <input
+    type="text"
+    id="speechText"
+    placeholder="Ask Aria something..."
+    size="50"
+    required
+  />
+  <br /><br />
+  <select id="method">
+    <option value="url">URL Method</option>
+    <option value="sdk">SDK Method</option>
+  </select>
+  <br /><br />
+  <button type="submit">Ask</button>
+</form>
+
+<div id="responseBox" style="margin-top: 30px; display: none">
+  <h3>Aria says:</h3>
+  <p id="responseText" style="font-size: 18px"></p>
+</div>
+
+<audio id="audioPlayer" controls style="display:none; margin-top: 10px;"></audio>
+
+<script>
+  const form = document.getElementById("speechForm");
+  const responseBox = document.getElementById("responseBox");
+  const responseText = document.getElementById("responseText");
+  const audioPlayer = document.getElementById("audioPlayer");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const userInput = document.getElementById("speechText").value.trim();
+    const method = document.getElementById("method").value;
+
+    if (!userInput) {
+      responseText.textContent = "Please enter a message before submitting.";
+      responseBox.style.display = "block";
+      audioPlayer.style.display = "none";
+      return;
+    }
+
+    let url, payload;
+
+    try {
+      if (method === "sdk") {
+        // --- SDK METHOD ---
+        const authRes = await fetch("/api/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            key: "ae603684648445fe343ba354f0d3eefa02ff3ba6c8e359bafeb375bc93afdb20",
+          }),
+        });
+
+        const authData = await authRes.json();
+        if (authData.status !== "OK")
+          throw new Error("Invalid API key or auth failed");
+
+        url = "/api/chat";
+        payload = {
+          assistantId: authData.assistantId,
+          threadId: authData.threadId,
+          message: userInput,
+        };
+      } else {
+        // --- URL METHOD ---
+        url = "/v1/ask-and-speak";
+        payload = { text: userInput };
+      }
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+     
+
+      // Shared logic: show message and audio if present
+      const message = data.message || data.text || data.original || "No response text.";
+      responseText.textContent = message;
+
+      const audioBase64 = data.audioBase64Wav || data.base64AudioWav;
+      if (audioBase64) {
+        audioPlayer.src = "data:audio/wav;base64," + audioBase64;
+        audioPlayer.style.display = "block";
+        audioPlayer.play().catch(() => {
+          console.warn("Autoplay blocked");
+        });
+      } else {
+        audioPlayer.style.display = "none";
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      responseText.textContent = "Error: " + error.message;
+      audioPlayer.style.display = "none";
+    }
+
+    responseBox.style.display = "block";
+  });
+</script>

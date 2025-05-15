@@ -3,6 +3,7 @@ package com.example.azurebotsample.service;
 import com.example.azurebotsample.model.xml.MsttsExpressAs;
 import com.example.azurebotsample.model.xml.Speak;
 import com.example.azurebotsample.model.xml.Voice;
+import com.example.azurebotsample.model.xml.Prosody; // this is used to control the playback speed (experimental)
 import com.microsoft.cognitiveservices.speech.*;
 import com.microsoft.cognitiveservices.speech.audio.AudioConfig;
 import com.microsoft.cognitiveservices.speech.audio.AudioOutputStream;
@@ -26,37 +27,39 @@ public class SpeechClient {
     private final String speechSubscriptionKey = "5Clm4YR3KFhmDb1WfVa5cnTXPyDffNmxJsNC0RNcJWpfgu26yZWGJQQJ99BDACqBBLyXJ3w3AAAYACOGEj7V";
     private final String resourceRegion = "southeastasia";
     private final String endpointUrl = "https://southeastasia.api.cognitive.microsoft.com/";
-    private final String voiceModel = "zh-CN-XiaomoNeural";
-    private final String lang = "zh-CN";
+    private final String voiceModel = "en-SG-LunaNeural"; // trying out this to make it entirely eng
+    private final String lang = "en-SG"; // trying out this to make it entirely eng
     private final String style = "customerservice";
     private final String role = "Girl";
     private final String styleDegree = "2";
 
-
-    public byte[] generateResponse(String responsePayload){
+    public byte[] generateResponse(String responsePayload) {
         // Creates an instance of a speech synthesizer using speech configuration with
         // specified
         // endpoint and subscription key and default speaker as audio output.
-        try(SpeechConfig config = SpeechConfig.fromEndpoint(new java.net.URI(endpointUrl), speechSubscriptionKey)){
+        try (SpeechConfig config = SpeechConfig.fromEndpoint(new java.net.URI(endpointUrl), speechSubscriptionKey)) {
             // Set the voice name, refer to https://aka.ms/speech/voices/neural for full
             // list.
             String file_name = "outputaudio.wav";
-            com.microsoft.cognitiveservices.speech.audio.AudioConfig audioConfig = com.microsoft.cognitiveservices.speech.audio.AudioConfig.fromStreamOutput(AudioOutputStream.createPullStream());
-//            var file_config = com.microsoft.cognitiveservices.speech.audio.AudioConfig.fromStreamOutput(new PullAudioOutputStream(0));
-//            com.microsoft.cognitiveservices.speech.audio.AudioConfig audioConfig;
-//            var audio_config = AudioConfig.FromStreamOutput(file_config);
+            com.microsoft.cognitiveservices.speech.audio.AudioConfig audioConfig = com.microsoft.cognitiveservices.speech.audio.AudioConfig
+                    .fromStreamOutput(AudioOutputStream.createPullStream());
+            // var file_config =
+            // com.microsoft.cognitiveservices.speech.audio.AudioConfig.fromStreamOutput(new
+            // PullAudioOutputStream(0));
+            // com.microsoft.cognitiveservices.speech.audio.AudioConfig audioConfig;
+            // var audio_config = AudioConfig.FromStreamOutput(file_config);
             config.setSpeechSynthesisVoiceName(voiceModel);
             config.setOutputFormat(OutputFormat.Simple);
             config.setSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Riff16Khz16BitMonoPcm);
-            try (SpeechSynthesizer synth = new SpeechSynthesizer(config,audioConfig)){
+            try (SpeechSynthesizer synth = new SpeechSynthesizer(config, audioConfig)) {
                 assert (config != null);
                 assert (synth != null);
 
                 int exitCode = 1;
 
-                log.info("Sending payload to speech service : {}",responsePayload);
-//                Future<SpeechSynthesisResult> task = synth.SpeakTextAsync(responsePayload);
-                //generate SSML payload for synthesiser from input
+                log.info("Sending payload to speech service : {}", responsePayload);
+                // Future<SpeechSynthesisResult> task = synth.SpeakTextAsync(responsePayload);
+                // generate SSML payload for synthesiser from input
                 String xmlInputPayload = generateXMLPayload(responsePayload);
                 Future<SpeechSynthesisResult> task = synth.SpeakSsmlAsync(xmlInputPayload);
 
@@ -79,7 +82,7 @@ public class SpeechClient {
                 }
                 if (exitCode == 0) {
                     return result.getAudioData();
-                }else {
+                } else {
                     return null;
                 }
             }
@@ -90,10 +93,13 @@ public class SpeechClient {
         }
     }
 
-    private String generateXMLPayload(String inputPayload){
-        try{
-            //create MsttsExpressAs object
-            MsttsExpressAs msttsExpressAs = new MsttsExpressAs(style,styleDegree,inputPayload);
+    private String generateXMLPayload(String inputPayload) {
+        try {
+            // Create a Prosody object (experimental)
+            Prosody prosody = new Prosody("-10.00%", null, null, inputPayload);
+
+            // create MsttsExpressAs object
+            MsttsExpressAs msttsExpressAs = new MsttsExpressAs(style, styleDegree, prosody);
             // Create Voice object
             Voice voice = new Voice(voiceModel, msttsExpressAs);
             // Create Speak object
@@ -104,7 +110,8 @@ public class SpeechClient {
             Marshaller marshaller = context.createMarshaller();
             // Set Marshaller properties for pretty printing
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            // To include the XML declaration (<?xml version="1.0" encoding="UTF-8" standalone="yes"?>)
+            // To include the XML declaration (<?xml version="1.0" encoding="UTF-8"
+            // standalone="yes"?>)
             // This is usually default, but can be explicitly set:
             // marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.FALSE);
             // Marshal to StringWriter (or System.out, FileOutputStream, etc.)
@@ -112,9 +119,9 @@ public class SpeechClient {
             marshaller.marshal(speak, stringWriter);
             // Print the XML
             String xmlOutput = stringWriter.toString();
-            System.out.println("XML output : "+xmlOutput);
+            System.out.println("XML output : " + xmlOutput);
             return xmlOutput;
-        }catch (JAXBException e) {
+        } catch (JAXBException e) {
             throw new RuntimeException(e);
         }
     }

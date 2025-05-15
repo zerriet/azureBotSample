@@ -1,6 +1,7 @@
 package com.example.azurebotsample.controller;
 
 import com.example.azurebotsample.model.BaseResponse;
+import com.example.azurebotsample.model.SpeechRequest;
 import com.example.azurebotsample.model.SpeechRequestPayload;
 import com.example.azurebotsample.service.SpeechClient;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.example.azurebotsample.controller.AssistantSpeechController;
 
 import java.util.Arrays;
+import java.util.Base64;
 
 @RestController
 @Slf4j
@@ -26,24 +29,24 @@ public class SpeechController {
     /**
      * API call for azure TTS resource
      */
-    @PostMapping(value = "get-speech")
-    public ResponseEntity<byte[]> getSpeech(@RequestBody SpeechRequestPayload payload) {
+    @PostMapping(value = "get-speech", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<SpeechRequest> getSpeech(@RequestBody SpeechRequestPayload payload) {
         try {
-            HttpHeaders responseHeaders = new HttpHeaders();
-            System.out.println("Request text :"+ payload.getSpeechText());
-            // Set the Content-Type to indicate that the body contains WAV audio.
-            byte[] audioBytes = speechClient.generateResponse(payload.getSpeechText());
-            System.out.println("Audiobytes array length: "+audioBytes.length);
-            responseHeaders.setContentType(MediaType.valueOf("audio/wav"));
-            // Optionally, set the Content-Length header (good practice)
-            /*responseHeaders.setContentLength(audioBytes.length);*/
-            return new ResponseEntity<>(audioBytes, responseHeaders, HttpStatus.OK);
-        }catch (Exception e) {
-            // Handle any exceptions that occur during synthesis
+            // System.out.println("Request text :" + payload.getSpeechText());
+            String rawText = payload.getSpeechText();
+            String cleanText = AssistantSpeechController.cleanFormatting(rawText); // basically cleaning up the unlikely
+                                                                                   // inputs of # and special characters
+                                                                                   // by the user
+            byte[] audioBytes = speechClient.generateResponse(cleanText);
+            String base64Audio = Base64.getEncoder().encodeToString(audioBytes);
+            SpeechRequest response = new SpeechRequest(payload.getSpeechText(), base64Audio);
+            // System.out.println(response);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
             System.out.println(e.getMessage());
-            e.printStackTrace(); // Log the error for debugging
-            // Return an appropriate error response
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); // 500 Internal Server Error
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
