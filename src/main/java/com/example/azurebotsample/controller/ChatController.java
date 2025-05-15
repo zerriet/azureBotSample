@@ -3,9 +3,12 @@ package com.example.azurebotsample.controller;
 import com.example.azurebotsample.model.ChatRequest;
 import com.example.azurebotsample.model.ChatResponse;
 import com.example.azurebotsample.service.AssistantService;
+import com.example.azurebotsample.service.SpeechClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Base64;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -13,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 public class ChatController {
 
     private final AssistantService assistantService;
+    private final SpeechClient speechClient;
 
-    public ChatController(AssistantService assistantService) {
+    public ChatController(AssistantService assistantService, SpeechClient speechClient) {
         this.assistantService = assistantService;
+        this.speechClient = speechClient;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -33,7 +38,12 @@ public class ChatController {
             }
 
             String reply = assistantService.chat(assistantId, threadId, message);
-            return new ChatResponse(reply);
+
+            // Generate audio
+            byte[] audio = speechClient.generateResponse(reply);
+            String base64Audio = Base64.getEncoder().encodeToString(audio);
+
+            return new ChatResponse(reply, base64Audio);
 
         } catch (Exception e) {
             log.error("Error during chat interaction", e);

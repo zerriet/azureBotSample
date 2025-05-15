@@ -32,7 +32,7 @@ public class SpeechController {
     @PostMapping(value = "get-speech", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SpeechRequest> getSpeech(@RequestBody SpeechRequestPayload payload) {
         try {
-            System.out.println("Request text :" + payload.getSpeechText());
+            // System.out.println("Request text :" + payload.getSpeechText());
             String rawText = payload.getSpeechText();
             String cleanText = AssistantSpeechController.cleanFormatting(rawText); // basically cleaning up the unlikely
                                                                                    // inputs of # and special characters
@@ -40,7 +40,7 @@ public class SpeechController {
             byte[] audioBytes = speechClient.generateResponse(cleanText);
             String base64Audio = Base64.getEncoder().encodeToString(audioBytes);
             SpeechRequest response = new SpeechRequest(payload.getSpeechText(), base64Audio);
-            System.out.println(response);
+            // System.out.println(response);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
