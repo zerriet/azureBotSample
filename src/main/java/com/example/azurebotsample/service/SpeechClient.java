@@ -32,31 +32,33 @@ public class SpeechClient {
     private final String role = "Girl";
     private final String styleDegree = "2";
 
-
-    public byte[] generateResponse(String responsePayload){
+    public byte[] generateResponse(String responsePayload) {
         // Creates an instance of a speech synthesizer using speech configuration with
         // specified
         // endpoint and subscription key and default speaker as audio output.
-        try(SpeechConfig config = SpeechConfig.fromEndpoint(new java.net.URI(endpointUrl), speechSubscriptionKey)){
+        try (SpeechConfig config = SpeechConfig.fromEndpoint(new java.net.URI(endpointUrl), speechSubscriptionKey)) {
             // Set the voice name, refer to https://aka.ms/speech/voices/neural for full
             // list.
             String file_name = "outputaudio.wav";
-            com.microsoft.cognitiveservices.speech.audio.AudioConfig audioConfig = com.microsoft.cognitiveservices.speech.audio.AudioConfig.fromStreamOutput(AudioOutputStream.createPullStream());
-//            var file_config = com.microsoft.cognitiveservices.speech.audio.AudioConfig.fromStreamOutput(new PullAudioOutputStream(0));
-//            com.microsoft.cognitiveservices.speech.audio.AudioConfig audioConfig;
-//            var audio_config = AudioConfig.FromStreamOutput(file_config);
+            com.microsoft.cognitiveservices.speech.audio.AudioConfig audioConfig = com.microsoft.cognitiveservices.speech.audio.AudioConfig
+                    .fromStreamOutput(AudioOutputStream.createPullStream());
+            // var file_config =
+            // com.microsoft.cognitiveservices.speech.audio.AudioConfig.fromStreamOutput(new
+            // PullAudioOutputStream(0));
+            // com.microsoft.cognitiveservices.speech.audio.AudioConfig audioConfig;
+            // var audio_config = AudioConfig.FromStreamOutput(file_config);
             config.setSpeechSynthesisVoiceName(voiceModel);
             config.setOutputFormat(OutputFormat.Simple);
             config.setSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Riff16Khz16BitMonoPcm);
-            try (SpeechSynthesizer synth = new SpeechSynthesizer(config,audioConfig)){
+            try (SpeechSynthesizer synth = new SpeechSynthesizer(config, audioConfig)) {
                 assert (config != null);
                 assert (synth != null);
 
                 int exitCode = 1;
 
-                log.info("Sending payload to speech service : {}",responsePayload);
-//                Future<SpeechSynthesisResult> task = synth.SpeakTextAsync(responsePayload);
-                //generate SSML payload for synthesiser from input
+                log.info("Sending payload to speech service : {}", responsePayload);
+                // Future<SpeechSynthesisResult> task = synth.SpeakTextAsync(responsePayload);
+                // generate SSML payload for synthesiser from input
                 String xmlInputPayload = generateXMLPayload(responsePayload);
                 Future<SpeechSynthesisResult> task = synth.SpeakSsmlAsync(xmlInputPayload);
 
@@ -79,7 +81,7 @@ public class SpeechClient {
                 }
                 if (exitCode == 0) {
                     return result.getAudioData();
-                }else {
+                } else {
                     return null;
                 }
             }
@@ -90,10 +92,10 @@ public class SpeechClient {
         }
     }
 
-    private String generateXMLPayload(String inputPayload){
-        try{
-            //create MsttsExpressAs object
-            MsttsExpressAs msttsExpressAs = new MsttsExpressAs(style,styleDegree,inputPayload);
+    private String generateXMLPayload(String inputPayload) {
+        try {
+            // create MsttsExpressAs object
+            MsttsExpressAs msttsExpressAs = new MsttsExpressAs(style, styleDegree, inputPayload);
             // Create Voice object
             Voice voice = new Voice(voiceModel, msttsExpressAs);
             // Create Speak object
@@ -104,7 +106,8 @@ public class SpeechClient {
             Marshaller marshaller = context.createMarshaller();
             // Set Marshaller properties for pretty printing
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            // To include the XML declaration (<?xml version="1.0" encoding="UTF-8" standalone="yes"?>)
+            // To include the XML declaration (<?xml version="1.0" encoding="UTF-8"
+            // standalone="yes"?>)
             // This is usually default, but can be explicitly set:
             // marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.FALSE);
             // Marshal to StringWriter (or System.out, FileOutputStream, etc.)
@@ -112,9 +115,9 @@ public class SpeechClient {
             marshaller.marshal(speak, stringWriter);
             // Print the XML
             String xmlOutput = stringWriter.toString();
-            System.out.println("XML output : "+xmlOutput);
+            System.out.println("XML output : " + xmlOutput);
             return xmlOutput;
-        }catch (JAXBException e) {
+        } catch (JAXBException e) {
             throw new RuntimeException(e);
         }
     }
