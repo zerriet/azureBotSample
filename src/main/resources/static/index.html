@@ -24,26 +24,44 @@
     const userInput = document.getElementById('speechText').value;
     const method = document.getElementById('method').value;
 
-    const url = method === 'sdk' ? '/v1/ask-and-speak-sdk' : '/v1/ask-and-speak';
-    const payload = { text: userInput };
-
-    if (method === 'sdk') {
-      payload.key = "1912766d6ba0e50e8b1bacfb51207e83b95b7ac0cd8ce15307cdf4965e7e3f6c"; // Optional API key
-    }
+    let url, payload;
 
     try {
+      if (method === 'sdk') {
+        // --- SDK METHOD ---
+        const authRes = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: "ae603684648445fe343ba354f0d3eefa02ff3ba6c8e359bafeb375bc93afdb20" })
+        });
+
+        const authData = await authRes.json();
+        if (authData.status !== "OK") throw new Error("Invalid API key or auth failed");
+
+        url = '/api/chat';
+        payload = {
+          assistantId: authData.assistantId,
+          threadId: authData.threadId,
+          message: userInput // important for ChatRequest.java
+        };
+      } else {
+        // --- URL METHOD ---
+        url = '/v1/ask-and-speak';
+        payload = { text: userInput }; // important for OpenAIAssistantService
+      }
+
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
       const data = await response.json();
-      responseText.textContent = data.text || "Something went wrong.";
+
+      // Handle response text key accordingly
+      responseText.textContent = data.message || data.text || "Something went wrong.";
     } catch (error) {
-      responseText.textContent = "Network error.";
+      responseText.textContent = "Error: " + error.message;
     }
 
     responseBox.style.display = 'block';

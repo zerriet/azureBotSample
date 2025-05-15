@@ -167,9 +167,12 @@ public class AssistantService {
                                                                                 .setVectorStoreIds(List
                                                                                                 .of(vectorStoreId)))));
 
+                System.out.println("Attached vector store: " + vectorStoreId);
                 // Open a new thread
                 AssistantThread thread = client.createThread(new AssistantThreadCreationOptions());
-
+                System.out.println("Thread ID: " + thread.getId());
+                System.out.println("Assistant ID: " + assistant.getId());
+                
                 return new AuthResponse("OK", assistant.getId(), thread.getId());
         }
 
