@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.example.azurebotsample.controller.AssistantSpeechController;
 
 import java.util.Arrays;
 import java.util.Base64;
@@ -32,11 +33,15 @@ public class SpeechController {
     public ResponseEntity<SpeechRequest> getSpeech(@RequestBody SpeechRequestPayload payload) {
         try {
             System.out.println("Request text :" + payload.getSpeechText());
-            byte[] audioBytes = speechClient.generateResponse(payload.getSpeechText());
+            String rawText = payload.getSpeechText();
+            String cleanText = AssistantSpeechController.cleanFormatting(rawText); // basically cleaning up the unlikely
+                                                                                   // inputs of # and special characters
+                                                                                   // by the user
+            byte[] audioBytes = speechClient.generateResponse(cleanText);
             String base64Audio = Base64.getEncoder().encodeToString(audioBytes);
             SpeechRequest response = new SpeechRequest(payload.getSpeechText(), base64Audio);
             System.out.println(response);
-    
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -45,5 +50,3 @@ public class SpeechController {
         }
     }
 }
-
-

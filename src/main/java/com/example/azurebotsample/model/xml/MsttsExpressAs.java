@@ -12,14 +12,20 @@ import lombok.NoArgsConstructor;
 // Define the element type and its namespace
 @XmlType(namespace = "https://www.w3.org/2001/mstts")
 public class MsttsExpressAs {
-    /*@XmlAttribute(name="role")
-    private String role;*/
+    /*
+     * @XmlAttribute(name="role")
+     * private String role;
+     */
     @XmlAttribute(name = "style")
     private String style;
 
     @XmlAttribute(name = "styledegree")
     private String styledegree; // Changed from styleDegree for attribute name matching
 
-    @XmlValue // Maps this field to the text content of the element
-    private String content;
+    // @XmlValue // Maps this field to the text content of the element
+    // private String content;
+
+    // (experimental) to control playback speed
+    @XmlElement(name = "prosody", namespace = "http://www.w3.org/2001/10/synthesis", type = Prosody.class)
+    private Prosody prosody;
 }

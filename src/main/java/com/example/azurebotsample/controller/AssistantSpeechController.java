@@ -44,40 +44,45 @@ public class AssistantSpeechController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
+
     public static String cleanFormatting(String input) {
+        // Remove Markdown headings like ###, ##, #
+        input = input.replaceAll("^#+\\s*", "").trim();
         // Remove bold, *italic*, underline, etc.
         return input.replaceAll("(\\*\\*|__|\\*|_)", "").trim();
     }
 
     // @PostMapping("/ask-and-speak")
-    // public ResponseEntity<?> askAndSpeak(@RequestBody Map<String, String> request) {
-    //     String userInput = request.get("text");
+    // public ResponseEntity<?> askAndSpeak(@RequestBody Map<String, String>
+    // request) {
+    // String userInput = request.get("text");
 
-    //     try {
-    //         // 1. Get assistant reply
-    //         String assistantMessage = assistantService.getAssistantReply(userInput);
+    // try {
+    // // 1. Get assistant reply
+    // String assistantMessage = assistantService.getAssistantReply(userInput);
 
-    //         // 2. Convert to speech (audio in raw format)
-    //         byte[] audioBytes = speechClient.generateResponse(assistantMessage);
+    // // 2. Convert to speech (audio in raw format)
+    // byte[] audioBytes = speechClient.generateResponse(assistantMessage);
 
-    //         // 3. Return JSON with base64 or raw audio
-    //         HttpHeaders headers = new HttpHeaders();
-    //         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+    // // 3. Return JSON with base64 or raw audio
+    // HttpHeaders headers = new HttpHeaders();
+    // headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-    //         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    //         body.add("text", assistantMessage);
-    //         body.add("audio", new ByteArrayResource(audioBytes) {
-    //             @Override
-    //             public String getFilename() {
-    //                 return "response.wav"; // Filename for the audio response
-    //             }
-    //         });
+    // MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    // body.add("text", assistantMessage);
+    // body.add("audio", new ByteArrayResource(audioBytes) {
+    // @Override
+    // public String getFilename() {
+    // return "response.wav"; // Filename for the audio response
+    // }
+    // });
 
-    //         return new ResponseEntity<>(body, headers, HttpStatus.OK);
+    // return new ResponseEntity<>(body, headers, HttpStatus.OK);
 
-    //     } catch (Exception e) {
-    //         log.error("Error occurred while processing request", e);
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
-    //     }
+    // } catch (Exception e) {
+    // log.error("Error occurred while processing request", e);
+    // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: "
+    // + e.getMessage());
+    // }
     // }
 }
