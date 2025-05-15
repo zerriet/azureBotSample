@@ -6,24 +6,31 @@ import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-@Service
-public class OpenAIAssistantService {
+@Service // For this, we are using URL method rather than the SDK method
+public class OpenAIAssistantService { // Declares the class as a Spring service
 
+    // Injects the OpenAI API key from application properties
     @Value("${openai.api.key}")
     private String apiKey;
 
+    // Injects the OpenAI API endpoint from application properties
     @Value("${openai.api.endpoint}")
     private String endpoint;
 
+    // Injects the OpenAI API version from application properties
     @Value("${openai.api.version}")
     private String apiVersion;
 
+    // Injects the vector store ID from application properties
     @Value("${openai.vector_store}")
     private String vectorStoreId;
 
+    // Creates an OkHttpClient instance for making HTTP requests
     private final OkHttpClient client = new OkHttpClient();
+    // Creates an ObjectMapper instance for JSON processing
     private final ObjectMapper mapper = new ObjectMapper();
 
+    // Method to get the assistant's reply based on user input
     public String getAssistantReply(String userMessage) throws Exception {
         // Step 1: Create Assistant
         String assistantPayload = String.format("""
@@ -42,6 +49,7 @@ public class OpenAIAssistantService {
             }
         """, vectorStoreId);
 
+        // Create the request to create an assistant
         Request assistantRequest = new Request.Builder()
                 .url(endpoint + "/openai/assistants?api-version=" + apiVersion) // dont change this
                 .addHeader("api-key", apiKey)
@@ -49,6 +57,7 @@ public class OpenAIAssistantService {
                 .post(RequestBody.create(assistantPayload, MediaType.parse("application/json")))
                 .build();
 
+        // Execute the request and parse the response        
         Response assistantResponse = client.newCall(assistantRequest).execute();
         JsonNode assistantJson = mapper.readTree(assistantResponse.body().string());
         String assistantId = assistantJson.path("id").asText();
@@ -145,3 +154,4 @@ public class OpenAIAssistantService {
         throw new RuntimeException("No assistant reply found.");
     }
 }
+

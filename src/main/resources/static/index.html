@@ -7,18 +7,15 @@
 <div id="responseBox" style="margin-top: 30px; display: none;">
   <h3>Aria says:</h3>
   <p id="responseText" style="font-size: 18px;"></p>
-  <audio id="audioPlayer" controls style="margin-top: 10px;"></audio>
 </div>
 
 <script>
   const form = document.getElementById('speechForm');
-  const audioPlayer = document.getElementById('audioPlayer');
   const responseBox = document.getElementById('responseBox');
   const responseText = document.getElementById('responseText');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const userInput = document.getElementById('speechText').value;
 
     const response = await fetch('/v1/ask-and-speak', {
@@ -30,27 +27,12 @@
     });
 
     if (response.ok) {
-      const blob = await response.blob();
-      const contentType = response.headers.get("Content-Type");
-
-      if (contentType.includes("audio")) {
-        const url = URL.createObjectURL(blob);
-        responseText.textContent = "[audio only response]";
-        audioPlayer.src = url;
-        audioPlayer.style.display = 'block';
-        responseBox.style.display = 'block';
-        audioPlayer.play();
-      } else {
-        // If response is JSON with text + audio
-        const data = await response.json();
-        responseText.textContent = data.text;
-        const audioBlob = new Blob([data.audio], { type: 'audio/wav' });
-        const url = URL.createObjectURL(audioBlob);
-        audioPlayer.src = url;
-        audioPlayer.play();
-      }
+      const data = await response.json();
+      responseText.textContent = data.text;
+      responseBox.style.display = 'block';
     } else {
-      alert("Failed to get response.");
+      responseText.textContent = "Something went wrong.";
+      responseBox.style.display = 'block';
     }
   });
 </script>
