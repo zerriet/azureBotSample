@@ -7,6 +7,7 @@ import com.example.azurebotsample.service.SpeechClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.Base64;
 
@@ -24,6 +25,7 @@ public class ChatController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Tag(name = "SDK Sending the message to the assistant")
     public ChatResponse chat(@RequestBody ChatRequest request) {
         try {
             String assistantId = request.getAssistantId();

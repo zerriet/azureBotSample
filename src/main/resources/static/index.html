@@ -76,7 +76,7 @@
       });
 
       const data = await response.json();
-      console.log("Response:", data);
+     
 
       // Shared logic: show message and audio if present
       const message = data.message || data.text || data.original || "No response text.";
