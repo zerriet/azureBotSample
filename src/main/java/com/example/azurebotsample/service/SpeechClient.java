@@ -3,6 +3,7 @@ package com.example.azurebotsample.service;
 import com.example.azurebotsample.model.xml.MsttsExpressAs;
 import com.example.azurebotsample.model.xml.Speak;
 import com.example.azurebotsample.model.xml.Voice;
+import com.example.azurebotsample.model.xml.Prosody; // this is used to control the playback speed (experimental)
 import com.microsoft.cognitiveservices.speech.*;
 import com.microsoft.cognitiveservices.speech.audio.AudioConfig;
 import com.microsoft.cognitiveservices.speech.audio.AudioOutputStream;
@@ -26,8 +27,8 @@ public class SpeechClient {
     private final String speechSubscriptionKey = "5Clm4YR3KFhmDb1WfVa5cnTXPyDffNmxJsNC0RNcJWpfgu26yZWGJQQJ99BDACqBBLyXJ3w3AAAYACOGEj7V";
     private final String resourceRegion = "southeastasia";
     private final String endpointUrl = "https://southeastasia.api.cognitive.microsoft.com/";
-    private final String voiceModel = "zh-CN-XiaomoNeural";
-    private final String lang = "zh-CN";
+    private final String voiceModel = "en-SG-LunaNeural"; // trying out this to make it entirely eng
+    private final String lang = "en-SG"; // trying out this to make it entirely eng
     private final String style = "customerservice";
     private final String role = "Girl";
     private final String styleDegree = "2";
@@ -94,8 +95,11 @@ public class SpeechClient {
 
     private String generateXMLPayload(String inputPayload) {
         try {
+            // Create a Prosody object (experimental)
+            Prosody prosody = new Prosody("-10.00%", null, null, inputPayload);
+
             // create MsttsExpressAs object
-            MsttsExpressAs msttsExpressAs = new MsttsExpressAs(style, styleDegree, inputPayload);
+            MsttsExpressAs msttsExpressAs = new MsttsExpressAs(style, styleDegree, prosody);
             // Create Voice object
             Voice voice = new Voice(voiceModel, msttsExpressAs);
             // Create Speak object
