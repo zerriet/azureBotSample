@@ -44,7 +44,10 @@ public class AssistantSpeechController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
+    // Added as a temporary fix by zl and dex
     public static String cleanFormatting(String input) {
+        // Remove Markdown headings like ###, ##, #
+        input = input.replaceAll("^#+\\s*", "").trim();
         // Remove bold, *italic*, underline, etc.
         return input.replaceAll("(\\*\\*|__|\\*|_)", "").trim();
     }
