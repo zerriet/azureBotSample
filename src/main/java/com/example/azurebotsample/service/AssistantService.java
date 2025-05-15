@@ -6,19 +6,15 @@ import com.azure.ai.openai.assistants.models.AssistantCreationOptions;
 import com.azure.ai.openai.assistants.models.AssistantThread;
 import com.azure.ai.openai.assistants.models.AssistantThreadCreationOptions;
 import com.azure.ai.openai.assistants.models.CreateRunOptions;
-import com.azure.ai.openai.assistants.models.CreateToolResourcesOptions;
-import com.azure.ai.openai.assistants.models.CreateFileSearchToolResourceOptions;
-import com.azure.ai.openai.assistants.models.CreateFileSearchToolResourceVectorStoreOptions;
-import com.azure.ai.openai.assistants.models.CreateFileSearchToolResourceVectorStoreOptionsList;
 import com.azure.ai.openai.assistants.models.FileSearchToolDefinition;
 import com.azure.ai.openai.assistants.models.PageableList;
 import com.azure.ai.openai.assistants.models.RunStatus;
-import com.azure.ai.openai.assistants.models.MessageContent;
-import com.azure.ai.openai.assistants.models.MessageRole;
-import com.azure.ai.openai.assistants.models.MessageTextContent;
 import com.azure.ai.openai.assistants.models.ThreadMessage;
 import com.azure.ai.openai.assistants.models.ThreadMessageOptions;
 import com.azure.ai.openai.assistants.models.ThreadRun;
+import com.azure.ai.openai.assistants.models.UpdateAssistantOptions;
+import com.azure.ai.openai.assistants.models.UpdateFileSearchToolResourceOptions;
+import com.azure.ai.openai.assistants.models.UpdateToolResourcesOptions;
 import com.example.azurebotsample.model.AuthResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -49,19 +45,33 @@ public class AssistantService {
                         return new AuthResponse("BAD_KEY", null, null);
                 }
 
-                // 1) create assistant with vector-store tool
+                // 1) create assistant with FileSearch tool only
                 Assistant assistant = client.createAssistant(
                                 new AssistantCreationOptions("virtual-avatar-gpt-mini")
                                                 .setName("yy testing")
-                                                .setInstructions("…your full instructions here…")
-                                                .setTools(List.of(new FileSearchToolDefinition()))
-                                                .setToolResources(new CreateToolResourcesOptions()
-                                                                .setFileSearch(new CreateFileSearchToolResourceOptions(
-                                                                                new CreateFileSearchToolResourceVectorStoreOptionsList(
-                                                                                                List.of(new CreateFileSearchToolResourceVectorStoreOptions(
-                                                                                                                List.of(vectorStoreId))))))));
+                                                .setInstructions(
+                                                                // (paste everything from your JS `options.instructions`
+                                                                // here verbatim)
+                                                                "Your primary responsibility is to act as a friend to a Gen Alpha user.\n"
+                                                                                +
+                                                                                "Please respond in a way that appeals to Gen Alpha users (those born roughly from 2010 onwards). Tag it under generic intent\n"
+                                                                                +
+                                                                                "You must not include emojis in your response.\n"
+                                                                                +
+                                                                                "…\n" +
+                                                                                "When a user asks for definitions … do not elaborate on your own.\n")
+                                                .setTools(List.of(new FileSearchToolDefinition())));
 
-                // 2) open a new thread
+                // 2) update assistant to attach your existing Vector Store
+                client.updateAssistant(
+                                assistant.getId(),
+                                new UpdateAssistantOptions()
+                                                .setToolResources(new UpdateToolResourcesOptions()
+                                                                .setFileSearch(new UpdateFileSearchToolResourceOptions()
+                                                                                .setVectorStoreIds(List
+                                                                                                .of(vectorStoreId)))));
+
+                // 3) open a new thread
                 AssistantThread thread = client.createThread(new AssistantThreadCreationOptions());
 
                 return new AuthResponse("OK", assistant.getId(), thread.getId());
@@ -70,7 +80,8 @@ public class AssistantService {
         public String chat(String assistantId, String threadId, String userMessage) throws InterruptedException {
                 // 1) post user message
                 client.createMessage(threadId,
-                                new ThreadMessageOptions(MessageRole.USER, userMessage));
+                                new ThreadMessageOptions(com.azure.ai.openai.assistants.models.MessageRole.USER,
+                                                userMessage));
 
                 // 2) start a run
                 ThreadRun run = client.createRun(threadId, new CreateRunOptions(assistantId));
@@ -86,10 +97,11 @@ public class AssistantService {
                 // 4) collect assistant’s text parts
                 PageableList<ThreadMessage> msgs = client.listMessages(threadId);
                 return msgs.getData().stream()
-                                .filter(m -> m.getRole() == MessageRole.ASSISTANT)
+                                .filter(m -> m.getRole() == com.azure.ai.openai.assistants.models.MessageRole.ASSISTANT)
                                 .flatMap(m -> m.getContent().stream())
-                                .filter(c -> c instanceof MessageTextContent)
-                                .map(c -> ((MessageTextContent) c).getText().getValue())
+                                .filter(c -> c instanceof com.azure.ai.openai.assistants.models.MessageTextContent)
+                                .map(c -> ((com.azure.ai.openai.assistants.models.MessageTextContent) c).getText()
+                                                .getValue())
                                 .collect(Collectors.joining());
         }
 }
