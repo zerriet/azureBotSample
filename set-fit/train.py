@@ -28,16 +28,24 @@ train_data = Dataset.from_dict({
         "Show me my account info",
         "Give me account details",
         "Where can I see my account number?",
-        "Display account information"
+        "Display account information",
+
+        # unknown
+        "Tell me a joke",
+        "I want pizza",
+        "What's the weather today?",
+        "Book me a cab",
+        "Turn on the lights"
     ],
     "label": [
         0, 0, 0, 0, 0,  # check_balance
-        1, 1, 1, 1, 1   # check_account_details
+        1, 1, 1, 1, 1,  # check_account_details
+        2, 2, 2, 2, 2   # unknown
     ]
 })
 
 # Define labels
-labels = ["check_balance", "check_account_details"]
+labels = ["check_balance", "check_account_details", "unknown"]
 
 
 # Step 2: Load Model
@@ -85,7 +93,13 @@ test_texts = [
     "Give me my bank account information",
     "I want to see my account ID",
     "What are the details of my account?",
-    "Tell me about my account credentials"
+    "Tell me about my account credentials",
+
+
+    "Order sushi",
+    "Play music please",
+    "Turn off the fan",
+    "Set a timer for 10 minutes"
 ]
 
 print("\n Generalization Test Results:")
