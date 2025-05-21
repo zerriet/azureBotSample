@@ -59,14 +59,14 @@
 
         url = "/api/chat";
         payload = {
-          assistantId: authData.assistantId,
-          threadId: authData.threadId,
-          message: userInput,
+          //assistantId: authData.assistantId,
+          //threadId: authData.threadId,
+          message: userInput
         };
       } else {
         // --- URL METHOD ---
-        url = "/v1/ask-and-speak";
-        payload = { text: userInput };
+        url = "/api/chat";
+        payload = { message: userInput };
       }
 
       const response = await fetch(url, {
@@ -76,11 +76,18 @@
       });
 
       const data = await response.json();
-     
+      const parsedMessage = JSON.parse(data.message);
+const content = parsedMessage.choices?.[0]?.message?.content;
 
-      // Shared logic: show message and audio if present
-      const message = data.message || data.text || data.original || "No response text.";
-      responseText.textContent = message;
+// For debugging purposes to check if the message content is parsed correctly (safe to ignore)
+if (content) {
+  console.log("Message content:", content);
+} else {
+  console.log("Message content not found.");
+}
+
+// Update the response text to the content 
+responseText.textContent = content ?? "No response text.";
 
       const audioBase64 = data.audioBase64Wav || data.base64AudioWav;
       if (audioBase64) {

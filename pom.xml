@@ -97,6 +97,23 @@
         <artifactId>dotenv-java</artifactId>
         <version>3.0.0</version>
     </dependency>
+    <!-- Azure SDK for Java -->
+    <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-identity</artifactId>
+        <version>1.4.0</version>
+    </dependency>
+    <!--HTTP components to make API calls-->
+    <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.5.13</version>
+    </dependency>
+    <dependency>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>20230227</version>
+    </dependency>
     </dependencies>
 
     <build>
