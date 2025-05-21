@@ -60,7 +60,7 @@ public class AssistantService {
                                                                                 "Create a character profile and dialogue prompts for an AI character, embodying a female high school student who is initially a stranger. The character should become more sociable and open as interactions with the user progress. You can reply in actions. **Shakes head etc**\n\n"
                                                                                 +
                                                                                 "# Character Profile\n" +
-                                                                                "- **Name**: Aria\n" +
+                                                                                "- **Name**: Pramit\n" +
                                                                                 "- **Age**: [Secondary school appropriate, e.g., 12-16 years old]\n"
                                                                                 +
                                                                                 "- **Personality**: Unfriendly, initially reserved but becomes more open and engaging over time.\n"

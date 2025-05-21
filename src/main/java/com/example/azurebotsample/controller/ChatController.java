@@ -52,7 +52,7 @@ import org.json.JSONException;
 
 //         } catch (Exception e) {
 //             log.error("Error during chat interaction", e);
-//             return new ChatResponse("Something went wrong while talking to Aria.");
+//             return new ChatResponse("Something went wrong while talking to Pramit.");
 //         }
 //     }
 // }

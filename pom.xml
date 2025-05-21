@@ -171,7 +171,7 @@
                 <configuration>
                     <schemaVersion>v2</schemaVersion>
                     <resourceGroup>bot-test</resourceGroup>
-                    <appName>ms-aria</appName>
+                    <appName>ms-pramit</appName>
                     <pricingTier>P1v2</pricingTier>
                     <region>southeastasia</region>
                     <runtime>
