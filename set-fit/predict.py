@@ -1,25 +1,32 @@
 import os
-import sys
-from setfit import SetFitModel
 
+# 🔧 Environment + OpenMP fix
+os.environ["LC_ALL"] = "en_US.UTF-8"
+os.environ["LANG"] = "en_US.UTF-8"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-# Define all trained labels
-labels = ["check_balance", "check_account_details", "unknown"]
+from flask import Flask, request, jsonify
+from setfit import SetFitModel
 
-# Construct model path
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-model_path = os.path.join(project_root, "setfit_model")
+app = Flask(__name__)
 
-print(f"Model path: {model_path}")
-print("Exists?", os.path.isdir(model_path))
+# ✅ Correct local load
+model_path = os.path.join(os.path.dirname(__file__), "setfit_model")
+model = SetFitModel._from_pretrained(model_id=model_path)
 
-try:
-    model = SetFitModel.from_pretrained(model_path, labels=labels, local_files_only=True)
-    user_input = sys.argv[1]
-    pred = model.predict([user_input])[0]
-    print(pred)
-    
-except Exception as e:
-    print("ERROR:", e)
-    sys.exit(1)
+@app.route("/predict", methods=["POST"])
+def predict():
+    data = request.get_json()
+    user_input = data.get("userInput", "")
+    if not user_input:
+        return jsonify({"error": "Missing input"}), 400
+    try:
+        prediction = model.predict([user_input])[0]
+        return jsonify({"prediction": prediction})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001)

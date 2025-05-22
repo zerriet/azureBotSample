@@ -1,52 +1,56 @@
 package com.example.azurebotsample.controller;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
 
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
 public class ClassificationController {
 
+    @PostMapping("/intent")
+    public String classify(@RequestParam String userInput) {
+        try {
+            URL url = URI.create("http://localhost:5001/predict").toURL();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
 
-@PostMapping("/intent")
-public String classify(@RequestParam String userInput) {
-    try {
-        ProcessBuilder pb = new ProcessBuilder(
-                "/Users/pramitshanmugababu/opt/anaconda3/envs/newenv/bin/python",
-                "set-fit/predict.py",
-                userInput
-        );
+            // JSON body
+            String jsonInputString = "{\"userInput\": \"" + userInput.replace("\"", "\\\"") + "\"}";
 
-        pb.environment().put("LC_ALL", "en_US.UTF-8");
-        pb.environment().put("LANG", "en_US.UTF-8");
-        pb.environment().put("OMP_NUM_THREADS", "1");
-        pb.environment().put("KMP_DUPLICATE_LIB_OK", "TRUE");
-        pb.environment().put("TOKENIZERS_PARALLELISM", "false");
+            // Send JSON
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonInputString.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
 
-        pb.directory(new File(System.getProperty("user.dir")));
-        pb.redirectErrorStream(true);
-        Process process = pb.start();
+            // Read response
+            int status = conn.getResponseCode();
+            InputStream is = (status >= 200 && status < 300) ? conn.getInputStream() : conn.getErrorStream();
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String line;
-        String lastLine = "";
-        while ((line = reader.readLine()) != null) {
-            lastLine = line;
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "utf-8"));
+            StringBuilder response = new StringBuilder();
+            String responseLine;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+
+            conn.disconnect();
+
+            // Extract prediction from JSON response: {"prediction":"check_balance"}
+            String result = response.toString();
+            int startIdx = result.indexOf(":\"") + 2;
+            int endIdx = result.indexOf("\"", startIdx);
+            return result.substring(startIdx, endIdx);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Exception: " + e.getMessage();
         }
-
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            return "Error: Python script exited with code " + exitCode;
-        }
-
-        return lastLine.trim(); 
-    } catch (Exception e) {
-        e.printStackTrace();
-        return "Exception: " + e.getMessage();
     }
-}
-
 }

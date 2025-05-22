@@ -5,7 +5,14 @@ import multiprocessing
 multiprocessing.set_start_method("fork", force=True)
 
 import os
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["LC_ALL"] = "en_US.UTF-8"
+os.environ["LANG"] = "en_US.UTF-8"
+os.environ["OMP_NUM_THREADS"] = "1"
+
+
 
 # Core Imports
 
