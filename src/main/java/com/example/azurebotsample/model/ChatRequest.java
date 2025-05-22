@@ -4,8 +4,17 @@ public class ChatRequest {
     private String assistantId;
     private String threadId;
     private String message;
+    private String method;
 
     public ChatRequest() {
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
     }
 
     public String getAssistantId() {

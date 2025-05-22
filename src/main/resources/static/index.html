@@ -1,110 +1,228 @@
-<form id="speechForm">
-  <input
-    type="text"
-    id="speechText"
-    placeholder="Ask Pramit something..."
-    size="50"
-    required
-  />
-  <br /><br />
-  <select id="method">
-    <option value="url">URL Method</option>
-    <option value="sdk">SDK Method</option>
-  </select>
-  <br /><br />
-  <button type="submit">Ask</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Albus Dumbledore - AI Chat Assistant</title>
+  <style>
+    body {
+      font-family: Albus Dumbledorel, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+      transition: background 0.3s, color 0.3s;
+    }
+    :root {
+      --bg: #f4f4f4;
+      --text: #000;
+      --card: #fff;
+      --border: #ccc;
+    }
+    body.dark {
+      --bg: #121212;
+      --text: #e0e0e0;
+      --card: #1e1e1e;
+      --border: #444;
+    }
+    .chat-container {
+      max-width: 600px;
+      margin: auto;
+      background: var(--card);
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+   .chat-history {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 15px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-<div id="responseBox" style="margin-top: 30px; display: none">
-  <h3>Pramit says:</h3>
-  <p id="responseText" style="font-size: 18px"></p>
+.message {
+  max-width: 75%;
+  padding: 10px;
+  border-radius: 10px;
+  position: relative;
+  word-wrap: break-word;
+}
+
+.user-message {
+  align-self: flex-end;
+  background-color: #cce5ff;
+  color: #003366;
+  text-align: right;
+  border-top-right-radius: 0;
+}
+
+.assistant-message {
+  align-self: flex-start;
+  background-color: #d0f0c0;
+  color: #1b3a1b;
+  text-align: left;
+  border-top-left-radius: 0;
+}
+
+.timestamp {
+  font-size: 0.75em;
+  opacity: 0.6;
+  margin-top: 4px;
+  display: block;
+}
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    #speechText {
+      flex: 1;
+      padding: 8px;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="top-bar">
+    <h2>Albus Dumbledore - AI Assistant</h2>
+    <label>
+      <input type="checkbox" id="darkToggle" />
+      Dark Mode
+    </label>
+  </div>
+
+  <div class="chat-history" id="chatHistory"></div>
+
+  <div class="controls">
+    <input type="text" id="speechText" placeholder="Type or speak..." required />
+    <button id="micBtn">🎤</button>
+    <button id="sendBtn">Send</button>
+  </div>
+
+  <div style="margin-top:10px;">
+    <label for="method">Choose Method:</label>
+    <select id="method">
+      <option value="sdk">SDK Method</option>
+      <option value="url">URL Method</option>
+    </select>
+  </div>
+
+  <audio id="audioPlayer" controls style="display:none; margin-top: 10px;"></audio>
 </div>
 
-<audio id="audioPlayer" controls style="display:none; margin-top: 10px;"></audio>
-
 <script>
-  const form = document.getElementById("speechForm");
-  const responseBox = document.getElementById("responseBox");
-  const responseText = document.getElementById("responseText");
+  const chatHistory = document.getElementById("chatHistory");
+  const speechText = document.getElementById("speechText");
+  const methodSelect = document.getElementById("method");
   const audioPlayer = document.getElementById("audioPlayer");
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const userInput = document.getElementById("speechText").value.trim();
-    const method = document.getElementById("method").value;
+  document.getElementById("sendBtn").onclick = sendMessage;
+  document.getElementById("micBtn").onclick = startSpeechRecognition;
+  document.getElementById("darkToggle").onchange = toggleDarkMode;
 
-    if (!userInput) {
-      responseText.textContent = "Please enter a message before submitting.";
-      responseBox.style.display = "block";
-      audioPlayer.style.display = "none";
-      return;
-    }
+  function getTimestamp() {
+    return new Date().toLocaleTimeString();
+  }
 
-    let url, payload;
+  function addMessage(role, text) {
+  const msg = document.createElement("div");
+  const time = new Date().toLocaleTimeString();
+
+  const isUser = role === "user";
+  msg.className = `message ${isUser ? "user-message" : "assistant-message"}`;
+  msg.innerHTML = `
+    <div><strong>${isUser ? "You" : "Albus Dumbledore"}:</strong> ${text}</div>
+    <span class="timestamp">${time}</span>
+  `;
+
+  chatHistory.appendChild(msg);
+  chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+
+  async function sendMessage() {
+    const input = speechText.value.trim();
+  
+    if (!input) return;
+
+    const method = methodSelect.value;
+    addMessage("user", input);
+
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: input, method })
+    });
+
+    const data = await response.json();
+    let content;
 
     try {
       if (method === "sdk") {
-        // --- SDK METHOD ---
-        const authRes = await fetch("/api/auth", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            key: "ae603684648445fe343ba354f0d3eefa02ff3ba6c8e359bafeb375bc93afdb20",
-          }),
-        });
-
-        const authData = await authRes.json();
-        if (authData.status !== "OK")
-          throw new Error("Invalid API key or auth failed");
-
-        url = "/api/chat";
-        payload = {
-          //assistantId: authData.assistantId,
-          //threadId: authData.threadId,
-          message: userInput
-        };
+        content = data.message;
       } else {
-        // --- URL METHOD ---
-        url = "/api/chat";
-        payload = { message: userInput };
+        const parsed = JSON.parse(data.message);
+        content = parsed.choices?.[0]?.message?.content ?? "No content found.";
       }
+    } catch (e) {
+      console.error("Parsing error:", e);
+      content = "Failed to parse assistant reply.";
+    }
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    addMessage("assistant", content);
 
-      const data = await response.json();
-      const parsedMessage = JSON.parse(data.message);
-const content = parsedMessage.choices?.[0]?.message?.content;
-
-// For debugging purposes to check if the message content is parsed correctly (safe to ignore)
-if (content) {
-  console.log("Message content:", content);
-} else {
-  console.log("Message content not found.");
-}
-
-// Update the response text to the content 
-responseText.textContent = content ?? "No response text.";
-
-      const audioBase64 = data.audioBase64Wav || data.base64AudioWav;
-      if (audioBase64) {
-        audioPlayer.src = "data:audio/wav;base64," + audioBase64;
-        audioPlayer.style.display = "block";
-        audioPlayer.play().catch(() => {
-          console.warn("Autoplay blocked");
-        });
-      } else {
-        audioPlayer.style.display = "none";
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      responseText.textContent = "Error: " + error.message;
+    if (data.audioBase64Wav || data.base64AudioWav) {
+      audioPlayer.src = "data:audio/wav;base64," + (data.audioBase64Wav || data.base64AudioWav);
+      audioPlayer.style.display = "block";
+      audioPlayer.play().catch(() => console.warn("Autoplay blocked"));
+    } else {
       audioPlayer.style.display = "none";
     }
 
-    responseBox.style.display = "block";
-  });
+    speechText.value = "";
+  }
+
+  function startSpeechRecognition() {
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Speech recognition not supported in this browser.");
+      return;
+    }
+
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      speechText.value = transcript;
+      sendMessage();
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+    };
+
+    recognition.start();
+  }
+
+  function toggleDarkMode(e) {
+    document.body.classList.toggle("dark", e.target.checked);
+  }
 </script>
+
+</body>
+</html>
