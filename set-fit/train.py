@@ -23,33 +23,65 @@ from datasets import Dataset
 
 train_data = Dataset.from_dict({
     "text": [
-        # check_balance
+
+        # --- check_balance ---
         "What's my balance?",
         "How much money do I have?",
         "Show my account balance",
         "Balance check",
         "Can I see how much is in my account?",
+        "I'm broke af how much left",
+        "yo what's my bank sayin",
+        "Any cash left?",
+        "Account balance pls",
+        "Check wallet",
+        "How much dough I got?",
+        "My funds?",
+        "I wanna know my money status",
+        "Cash check pls",
+        "Lowkey how much do I have?",
 
-        # check_account_details
+        # --- check_account_details ---
         "What's my account number?",
         "Show me my account info",
         "Give me account details",
         "Where can I see my account number?",
         "Display account information",
+        "Acc no pls",
+        "What's my digits?",
+        "Drop my account info",
+        "Tell me my full bank details",
+        "My banking credentials?",
+        "Account deets pls",
+        "Yo what's my acc id?",
+        "Wanna see my bank info",
+        "Hit me with my acc no",
+        "What acc do I have?",
 
-        # unknown
+        # --- unknown ---
         "Tell me a joke",
         "I want pizza",
         "What's the weather today?",
         "Book me a cab",
-        "Turn on the lights"
+        "Turn on the lights",
+        "Let's vibe",
+        "Send a meme",
+        "How tall is the Eiffel Tower?",
+        "Who's Taylor Swift?",
+        "Make me laugh",
+        "Tell me sum funny",
+        "Wanna hear a story",
+        "Spotify play",
+        "Flip a coin",
+        "U up?"
     ],
     "label": [
-        0, 0, 0, 0, 0,  # check_balance
-        1, 1, 1, 1, 1,  # check_account_details
-        2, 2, 2, 2, 2   # unknown
+        *([0] * 15),  # check_balance
+        *([1] * 15),  # check_account_details
+        *([2] * 15)   # unknown
     ]
 })
+
 
 # Define labels
 labels = ["check_balance", "check_account_details", "unknown"]
