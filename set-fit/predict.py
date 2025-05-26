@@ -12,7 +12,7 @@ from setfit import SetFitModel
 
 app = Flask(__name__)
 
-# ✅ Correct local load
+
 model_path = os.path.join(os.path.dirname(__file__), "setfit_model")
 model = SetFitModel._from_pretrained(model_id=model_path)
 
