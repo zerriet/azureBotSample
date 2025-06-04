@@ -109,10 +109,10 @@ train_data = Dataset.from_dict({
 ]
 ,
     "label": [
-        *([0] * 15),  # check_balance
-        *([1] * 15),  # check_account_details
-        *([2] * 15)   # unknown
-        *([3] * 15)   # quiz_me
+        *([0] * 20),  # check_balance
+        *([1] * 20),  # check_account_details
+        *([2] * 20),   # unknown
+        *([3] * 20)   # quiz_me
     ]
 })
 
@@ -171,9 +171,9 @@ test_texts = [
     "Order sushi",
     "Play music please",
     "Turn off the fan",
-    "Set a timer for 10 minutes"
+    "Set a timer for 10 minutes",
 
-    "quiz me bro"
+    "quiz me bro",
     "i wanna be quizzed"
 ]
 
