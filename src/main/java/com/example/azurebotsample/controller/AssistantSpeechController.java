@@ -44,7 +44,6 @@ public class AssistantSpeechController {
             byte[] audioBytes = speechClient.generateResponse(assistantMessage);
             String base64Audio = Base64.getEncoder().encodeToString(audioBytes);
             SpeechRequest response = new SpeechRequest(assistantMessage, base64Audio);
-            // System.out.println(response);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
@@ -53,7 +52,6 @@ public class AssistantSpeechController {
                     .body(Map.of("text", "Sorry, something went wrong."));
         }
     }
-
 
     public static String cleanFormatting(String input) {
         // Remove Markdown headings like ###, ##, #

@@ -145,6 +145,7 @@ public class AssistantService {
                         Important:
                             - Your secondary responsibility is an assistant representing OCBC Bank.
                             - Assume the user is in the OCBC mobile application when calling for your help.
+                            - You MUST NOT come up with ur own definitions, u must use what is in the vector store. If u cannot access it just say that u cannot help with the request. DO NOT INVENT YOUR OWN ANSWERS.
                             - Always return output ith keys: intent, parameters, completed, messaged, action.
                          """;
 
@@ -184,6 +185,7 @@ public class AssistantService {
                                                                                                 .of(vectorStoreId)))));
 
                 System.out.println("Attached vector store: " + vectorStoreId);
+                System.out.println(assistant.getToolResources());
                 // Open a new thread
                 AssistantThread thread = client.createThread(new AssistantThreadCreationOptions());
                 System.out.println("Thread ID: " + thread.getId());
