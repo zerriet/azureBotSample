@@ -105,7 +105,13 @@ train_data = Dataset.from_dict({
     "Hit me with some brain fuel",
     "Yo throw me a quiz",
     "I wanna flex my brain",
-    "Give me a riddle"
+    "Give me a riddle",
+    "Hit me with a question now",
+"I'm ready, give me a challenge",
+"Can we do a quick quiz?",
+"Throw some trivia at me",
+"Surprise me with a question"
+
 ]
 ,
     "label": [
