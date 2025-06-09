@@ -14,74 +14,6 @@ model = SetFitModel._from_pretrained(model_id=model_path)
 
 # ✅ Full test data
 test_data = [
-    # ---- Transfer Money ----
-    ("Send Maile 10$", "transfer money"),
-    ("Send Maile some cash", "transfer money"),
-    ("Transfer money to Maile", "transfer money"),
-    ("Pay Maile", "transfer money"),
-    ("Settle my bill with Maile", "transfer money"),
-    ("Some funds to Maile", "transfer money"),
-    ("Pay to 9999 9999", "transfer money"),
-    ("Little cash to Maile", "transfer money"),
-    ("Donate to Maile", "transfer money"),
-    ("Assist Maile with some funds", "transfer money"),
-    ("Give Maile some coins", "transfer money"),
-    ("Send Maile some dollars", "transfer money"),
-    ("Give Maile some of my allowance", "transfer money"),
-    ("Skibidi Money", "transfer money"),
-    ("Spare change to Maile", "transfer money"),
-    ("10 bucks to Maile", "transfer money"),
-    ("Drop some cash to Maile", "transfer money"),
-    ("Direct me to PayNow", "transfer money"),
-    ("Gift Maile money", "transfer money"),
-    ("X fer money to Maile", "transfer money"),
-    ("Payment to Maile", "transfer money"),
-    ("Wire funds to Maile", "transfer money"),
-    ("Move money", "transfer money"),
-    ("Deposit money into someone's account", "transfer money"),
-    ("Remit money to someone", "transfer money"),
-    ("Cash transfer to everybody", "transfer money"),
-    ("Settle a bill for someone", "transfer money"),
-    ("Give Maile a little something to brighten his day", "transfer money"),
-    ("2 Benjamins to Maile", "transfer money"),
-    ("8 Cheddar to Maile", "transfer money"),
-    ("200 Dough to Maile", "transfer money"),
-    ("135 Moolah to Maile", "transfer money"),
-    ("66 Greenbacks to Maile", "transfer money"),
-    ("71 Quid to Maile", "transfer money"),
-    ("1 Coins to Maile", "transfer money"),
-
-    # ---- Scan and Pay ----
-    ("Snap and pay", "scan and pay"),
-    ("Scan to buy", "scan and pay"),
-    ("Quick pay", "scan and pay"),
-    ("Tap and go", "scan and pay"),
-    ("Point and pay", "scan and pay"),
-    ("Scan and spend", "scan and pay"),
-    ("Pay with a pic", "scan and pay"),
-    ("Click and pay", "scan and pay"),
-    ("Scan and dash", "scan and pay"),
-    ("Easy pay", "scan and pay"),
-    ("Camera to pay", "scan and pay"),
-    ("Click and pay", "scan and pay"),
-    ("Shatter and pay", "scan and pay"),
-    ("Camera pay", "scan and pay"),
-    ("Scan pay", "scan and pay"),
-    ("QR", "scan and pay"),
-    ("Quick response code", "scan and pay"),
-    ("Barcode", "scan and pay"),
-    ("Square pattern of black and white squares", "scan and pay"),
-    ("Camera at the code", "scan and pay"),
-    ("Photo pay", "scan and pay"),
-    ("Picture pay", "scan and pay"),
-    ("Pay with barcode", "scan and pay"),
-    ("Pay with photo", "scan and pay"),
-    ("Pay with black and white squares", "scan and pay"),
-    ("Scan black and white squares", "scan and pay"),
-    ("Pay abstract mosaic", "scan and pay"),
-    ("Pay pixelated squares", "scan and pay"),
-    ("Pay pixelated barcodes", "scan and pay"),
-    ("Scan squares", "scan and pay"),
 
     # ---- Transaction History ----
     ("How much I spent last week?", "transaction history"),
@@ -224,45 +156,6 @@ test_data = [
     ("How ya feel?", "generic"),
     ("What's good?", "generic"),
 
-    # ---- Generic (Bank) ----
-   ("How do I level up my money game?", "generic (bank)"),
-    ("What's the scoop on saving like a pro?", "generic (bank)"),
-    ("How can I make my cash grow like a plant?", "generic (bank)"),
-    ("What's the deal with budgeting, and how do I do it?", "generic (bank)"),
-    ("How do I unlock the secrets of investing?", "generic (bank)"),
-    ("What's the lowdown on credit scores?", "generic (bank)"),
-    ("How can I avoid the money traps?", "generic (bank)"),
-    ("What's the best way to stash my cash?", "generic (bank)"),
-    ("How do I keep my wallet happy?", "generic (bank)"),
-    ("What's the 411 on loans and interest rates?", "generic (bank)"),
-    ("How can I make my dollars work for me?", "generic (bank)"),
-    ("What's the trick to understanding stocks?", "generic (bank)"),
-    ("How do I avoid financial FOMO?", "generic (bank)"),
-    ("What's the scoop on emergency funds?", "generic (bank)"),
-    ("How can I flex my financial muscles?", "generic (bank)"),
-    ("What's the tea on retirement savings?", "generic (bank)"),
-    ("How do I navigate the world of digital wallets?", "generic (bank)"),
-    ("What's the best way to track my spending?", "generic (bank)"),
-    ("How can I turn my side hustle into a money maker?", "generic (bank)"),
-    ("What's the secret sauce for smart investing?", "generic (bank)"),
-    ("What is MyOwn Account?", "generic (bank)"),
-    ("What are some effective strategies for saving more money each month?", "generic (bank)"),
-    ("Can you share your top tips for maximizing savings and minimizing expenses?", "generic (bank)"),
-    ("How do you manage to save money? Do you have any personal tips or tricks?", "generic (bank)"),
-    ("What are some creative ways you've found to save money that others might not think of?", "generic (bank)"),
-    ("What is OCBC", "generic (bank)"),
-    ("Teach me how to be money-savvy", "generic (bank)"),
-    ("I wanna see my growth!", "generic (bank)"),
-    ("How can I protect my account from fraud?", "generic (bank)"),
-    ("I need to get my finances on point.", "generic (bank)"),
-    ("What's the best way to save for a new phone? Any hacks?", "generic (bank)"),
-    ("What's the tea on interest rates right now? Are they fire or a flop?", "generic (bank)"),
-    ("What's the process for a bank transfer?", "generic (bank)"),
-    ("What's the lowdown on savings rates?", "generic (bank)"),
-    ("Can I get a financial advisor?", "generic (bank)"),
-    ("I wanna set up a budget, help me out!", "generic (bank)"),
-    ("Can you show me how to use the ATM?", "generic (bank)"),
-    ("Can I get a loan for my side hustle?", "generic (bank)"),
 
     # ---- Deals ----
     ("Epic deals", "deals"),
@@ -306,14 +199,14 @@ pred_indices = [label_list.index(p) for p in preds]
 true_indices = [label_list.index(l) for l in true_labels]
 
 # ✅ Section Accuracy
-print("\n🔎 Section Accuracy:")
+print("\n Section Accuracy:")
 for label in label_list:
     indices = [i for i, true in enumerate(true_labels) if true == label]
     correct = sum(1 for i in indices if preds[i] == true_labels[i])
     print(f"{label}: {correct}/{len(indices)} correct")
 
 # ✅ Prediction Breakdown
-print("\n📝 Prediction Breakdown:")
+print("\n Prediction Breakdown:")
 for i, (text, pred_str, true_str) in enumerate(zip(sample_inputs, preds, true_labels)):
     correct = "✅" if pred_str == true_str else "❌"
     print(f'{i+1:02d}. "{text}" → Predicted: {pred_str} | Expected: {true_str} {correct}')
