@@ -1,0 +1,323 @@
+import os
+from setfit import SetFitModel
+
+# ✅ Environment setup
+os.environ["LC_ALL"] = "en_US.UTF-8"
+os.environ["LANG"] = "en_US.UTF-8"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
+# ✅ Load model
+model_path = os.path.join(os.path.dirname(__file__), "setfit_model")
+model = SetFitModel._from_pretrained(model_id=model_path)
+
+# ✅ Full test data
+test_data = [
+    # ---- Transfer Money ----
+    ("Send Maile 10$", "transfer money"),
+    ("Send Maile some cash", "transfer money"),
+    ("Transfer money to Maile", "transfer money"),
+    ("Pay Maile", "transfer money"),
+    ("Settle my bill with Maile", "transfer money"),
+    ("Some funds to Maile", "transfer money"),
+    ("Pay to 9999 9999", "transfer money"),
+    ("Little cash to Maile", "transfer money"),
+    ("Donate to Maile", "transfer money"),
+    ("Assist Maile with some funds", "transfer money"),
+    ("Give Maile some coins", "transfer money"),
+    ("Send Maile some dollars", "transfer money"),
+    ("Give Maile some of my allowance", "transfer money"),
+    ("Skibidi Money", "transfer money"),
+    ("Spare change to Maile", "transfer money"),
+    ("10 bucks to Maile", "transfer money"),
+    ("Drop some cash to Maile", "transfer money"),
+    ("Direct me to PayNow", "transfer money"),
+    ("Gift Maile money", "transfer money"),
+    ("X fer money to Maile", "transfer money"),
+    ("Payment to Maile", "transfer money"),
+    ("Wire funds to Maile", "transfer money"),
+    ("Move money", "transfer money"),
+    ("Deposit money into someone's account", "transfer money"),
+    ("Remit money to someone", "transfer money"),
+    ("Cash transfer to everybody", "transfer money"),
+    ("Settle a bill for someone", "transfer money"),
+    ("Give Maile a little something to brighten his day", "transfer money"),
+    ("2 Benjamins to Maile", "transfer money"),
+    ("8 Cheddar to Maile", "transfer money"),
+    ("200 Dough to Maile", "transfer money"),
+    ("135 Moolah to Maile", "transfer money"),
+    ("66 Greenbacks to Maile", "transfer money"),
+    ("71 Quid to Maile", "transfer money"),
+    ("1 Coins to Maile", "transfer money"),
+
+    # ---- Scan and Pay ----
+    ("Snap and pay", "scan and pay"),
+    ("Scan to buy", "scan and pay"),
+    ("Quick pay", "scan and pay"),
+    ("Tap and go", "scan and pay"),
+    ("Point and pay", "scan and pay"),
+    ("Scan and spend", "scan and pay"),
+    ("Pay with a pic", "scan and pay"),
+    ("Click and pay", "scan and pay"),
+    ("Scan and dash", "scan and pay"),
+    ("Easy pay", "scan and pay"),
+    ("Camera to pay", "scan and pay"),
+    ("Click and pay", "scan and pay"),
+    ("Shatter and pay", "scan and pay"),
+    ("Camera pay", "scan and pay"),
+    ("Scan pay", "scan and pay"),
+    ("QR", "scan and pay"),
+    ("Quick response code", "scan and pay"),
+    ("Barcode", "scan and pay"),
+    ("Square pattern of black and white squares", "scan and pay"),
+    ("Camera at the code", "scan and pay"),
+    ("Photo pay", "scan and pay"),
+    ("Picture pay", "scan and pay"),
+    ("Pay with barcode", "scan and pay"),
+    ("Pay with photo", "scan and pay"),
+    ("Pay with black and white squares", "scan and pay"),
+    ("Scan black and white squares", "scan and pay"),
+    ("Pay abstract mosaic", "scan and pay"),
+    ("Pay pixelated squares", "scan and pay"),
+    ("Pay pixelated barcodes", "scan and pay"),
+    ("Scan squares", "scan and pay"),
+
+    # ---- Transaction History ----
+    ("How much I spent last week?", "transaction history"),
+    ("My activity last week", "transaction history"),
+    ("How much did I shell out last week?", "transaction history"),
+    ("My total expenditure last week?", "transaction history"),
+    ("What's the sum of my expenses?", "transaction history"),
+    ("How much did I pay out last week?", "transaction history"),
+    ("What was the damage to my wallet last week?", "transaction history"),
+    ("What was my total for last week?", "transaction history"),
+    ("Damage today", "transaction history"),
+    ("How much did I blow last week?", "transaction history"),
+    ("Cashflow today", "transaction history"),
+    ("Quick rundown of last week's expenses", "transaction history"),
+    ("Transaction History", "transaction history"),
+    ("History", "transaction history"),
+    ("Money score", "transaction history"),
+    ("Financial footprint", "transaction history"),
+    ("My spending spree", "transaction history"),
+    ("How much did I swipe last week?", "transaction history"),
+    ("Can you spill the tea on my spending last week?", "transaction history"),
+    ("How much did I fork out last week?", "transaction history"),
+    ("What was my weekly splurge total?", "transaction history"),
+    ("What's the scoop on my last week's expenses?", "transaction history"),
+    ("Last week how much Benjamins?", "transaction history"),
+
+    # ---- Check Balance ----
+    ("Peep my balance", "check balance"),
+    ("What's my cash status", "check balance"),
+    ("How much is in the bank", "check balance"),
+    ("Check my dough", "check balance"),
+    ("What's the balance vibe", "check balance"),
+    ("How much I got chillin'", "check balance"),
+    ("Let's see my funds", "check balance"),
+    ("What's my money count", "check balance"),
+    ("Check my wallet vibes", "check balance"),
+    ("How's my cash flow looking", "check balance"),
+    ("peep my cash vibes?", "check balance"),
+    ("Check Balance", "check balance"),
+    ("Dough status", "check balance"),
+    ("Checking my stash", "check balance"),
+    ("What's the tea, money fam", "check balance"),
+    ("See my balance without the drama", "check balance"),
+    ("See balance", "check balance"),
+    ("Deets on my balance", "check balance"),
+
+    # ---- Logout ----
+    ("Time to bounce!", "logout"),
+    ("Logging off, fam!", "logout"),
+    ("Peace out, digital world!", "logout"),
+    ("Catch ya later, tech squad!", "logout"),
+    ("Signing off, my peeps!", "logout"),
+    ("Exiting the chat, see ya!", "logout"),
+    ("Time to ghost!", "logout"),
+    ("Logging out like a boss!", "logout"),
+    ("Switching off the vibes!", "logout"),
+    ("Closing the laptop portal!", "logout"),
+    ("Time to unplug, my dudes!", "logout"),
+    ("Bye-bye, cyberspace!", "logout"),
+    ("Logging off this adventure!", "logout"),
+    ("Signing out, keep it real!", "logout"),
+    ("Time to dip from the digital scene!", "logout"),
+    ("Shutting down my online self!", "logout"),
+    ("Logging off the grid!", "logout"),
+    ("Time to hit the offline zone!", "logout"),
+    ("Closing the app, see ya later!", "logout"),
+    ("Exiting the matrix!", "logout"),
+    ("Time to log off the hype train!", "logout"),
+    ("Signing out of the digital jungle!", "logout"),
+    ("Hitting the exit button on this session!", "logout"),
+    ("Time to step away from the screen!", "logout"),
+    ("Logging off the internet express!", "logout"),
+    ("Time to close the digital door!", "logout"),
+    ("Taking a break from the online hustle!", "logout"),
+    ("Signing off this virtual ride!", "logout"),
+    ("Time to fade into the offline world!", "logout"),
+    ("Exiting the digital universe!", "logout"),
+    ("Exit", "logout"),
+
+    # ---- Money Lock ----
+    ("Money Lock $10", "money lock"),
+    ("Secure the cheddar!", "money lock"),
+    ("Fortify my funds!", "money lock"),
+    ("Cash in the vault, please!", "money lock"),
+    ("Seal the green!", "money lock"),
+    ("Money on lockdown!", "money lock"),
+    ("Stash my stash!", "money lock"),
+    ("Cage the coins!", "money lock"),
+    ("Guard my bucks!", "money lock"),
+    ("Put my dough on ice!", "money lock"),
+    ("Bunker my bank!", "money lock"),
+    ("Hide the hundo!", "money lock"),
+    ("Bolt down the bills!", "money lock"),
+    ("Wrap my wealth!", "money lock"),
+    ("Keep my cash cozy!", "money lock"),
+    ("Lock up the loot!", "money lock"),
+    ("Secure my savings!", "money lock"),
+    ("Nest my nest egg!", "money lock"),
+    ("Put the paper on pause!", "money lock"),
+    ("Crate my cash!", "money lock"),
+    ("Shield my shekels!", "money lock"),
+    ("Stow the stacks!", "money lock"),
+    ("Cloak my coins!", "money lock"),
+    ("Panic room for my pennies!", "money lock"),
+    ("Tuck away the treasure!", "money lock"),
+    ("Jam the jackpot!", "money lock"),
+    ("Block my bucks!", "money lock"),
+    ("Wrap the wallet!", "money lock"),
+    ("Cocoon my cash!", "money lock"),
+    ("Bunker down the bills!", "money lock"),
+    ("Seal the stash!", "money lock"),
+
+    # ---- Generic ----
+    ("How are you?", "generic"),
+    ("What's the weather?", "generic"),
+    ("How are you vibing today?", "generic"),
+    ("How are you feeling in the digital realm?", "generic"),
+    ("How are you holding up in the cloud?", "generic"),
+    ("How are you processing the good vibes?", "generic"),
+    ("How are you cruising through cyberspace?", "generic"),
+    ("How are you surfing the info waves?", "generic"),
+    ("How are you rocking the ones and zeros?", "generic"),
+    ("How are you handling the data dance?", "generic"),
+    ("How are you zipping through the chats?", "generic"),
+    ("How are you jamming with the algorithms?", "generic"),
+    ("How are you keeping it real in the matrix?", "generic"),
+    ("How are you decoding the day?", "generic"),
+    ("How are you navigating the net?", "generic"),
+    ("How are you managing the meme machine?", "generic"),
+    ("How are you tuning into the trends?", "generic"),
+    ("How are you blending the bytes?", "generic"),
+    ("How are you thriving in the tech jungle?", "generic"),
+    ("How are you connecting with the cool kids?", "generic"),
+    ("How are you scrolling through the info feed?", "generic"),
+    ("How are you keeping the convo lit?", "generic"),
+    ("What's bussin?", "generic"),
+    ("I am broke", "generic"),
+    ("Do you guys have a dope banking app? I need something that slaps!", "generic"),
+    ("Where do I start?", "generic"),
+    ("How ya feel?", "generic"),
+    ("What's good?", "generic"),
+
+    # ---- Generic (Bank) ----
+   ("How do I level up my money game?", "generic (bank)"),
+    ("What's the scoop on saving like a pro?", "generic (bank)"),
+    ("How can I make my cash grow like a plant?", "generic (bank)"),
+    ("What's the deal with budgeting, and how do I do it?", "generic (bank)"),
+    ("How do I unlock the secrets of investing?", "generic (bank)"),
+    ("What's the lowdown on credit scores?", "generic (bank)"),
+    ("How can I avoid the money traps?", "generic (bank)"),
+    ("What's the best way to stash my cash?", "generic (bank)"),
+    ("How do I keep my wallet happy?", "generic (bank)"),
+    ("What's the 411 on loans and interest rates?", "generic (bank)"),
+    ("How can I make my dollars work for me?", "generic (bank)"),
+    ("What's the trick to understanding stocks?", "generic (bank)"),
+    ("How do I avoid financial FOMO?", "generic (bank)"),
+    ("What's the scoop on emergency funds?", "generic (bank)"),
+    ("How can I flex my financial muscles?", "generic (bank)"),
+    ("What's the tea on retirement savings?", "generic (bank)"),
+    ("How do I navigate the world of digital wallets?", "generic (bank)"),
+    ("What's the best way to track my spending?", "generic (bank)"),
+    ("How can I turn my side hustle into a money maker?", "generic (bank)"),
+    ("What's the secret sauce for smart investing?", "generic (bank)"),
+    ("What is MyOwn Account?", "generic (bank)"),
+    ("What are some effective strategies for saving more money each month?", "generic (bank)"),
+    ("Can you share your top tips for maximizing savings and minimizing expenses?", "generic (bank)"),
+    ("How do you manage to save money? Do you have any personal tips or tricks?", "generic (bank)"),
+    ("What are some creative ways you've found to save money that others might not think of?", "generic (bank)"),
+    ("What is OCBC", "generic (bank)"),
+    ("Teach me how to be money-savvy", "generic (bank)"),
+    ("I wanna see my growth!", "generic (bank)"),
+    ("How can I protect my account from fraud?", "generic (bank)"),
+    ("I need to get my finances on point.", "generic (bank)"),
+    ("What's the best way to save for a new phone? Any hacks?", "generic (bank)"),
+    ("What's the tea on interest rates right now? Are they fire or a flop?", "generic (bank)"),
+    ("What's the process for a bank transfer?", "generic (bank)"),
+    ("What's the lowdown on savings rates?", "generic (bank)"),
+    ("Can I get a financial advisor?", "generic (bank)"),
+    ("I wanna set up a budget, help me out!", "generic (bank)"),
+    ("Can you show me how to use the ATM?", "generic (bank)"),
+    ("Can I get a loan for my side hustle?", "generic (bank)"),
+
+    # ---- Deals ----
+    ("Epic deals", "deals"),
+    ("Hot tips on where to snag some epic deals", "deals"),
+    ("Where can I score the coolest discounts", "deals"),
+    ("Latest scoops", "deals"),
+    ("Scoop on the freshest deals", "deals"),
+    ("What;s poppin'", "deals"),
+    ("Any secret spots for snagging sweet discounts", "deals"),
+    ("Latest buzz on cashback offers?", "deals"),
+    ("Latest buzz", "deals"),
+    ("Ultimate savings deals", "deals"),
+    ("Promo land", "deals"),
+    ("Promotions", "deals"),
+
+    # ---- Refer a Friend ----
+    ("Refer a friend", "refer a friend"),
+    ("Refer my friends", "refer a friend"),
+    ("Make a chum connection and enjoy", "refer a friend"),
+    ("Hook up my pal", "refer a friend"),
+    ("Invite my crew", "refer a friend"),
+    ("Grab my pals to join me", "refer a friend"),
+    ("Spread the friendship vibes", "refer a friend"),
+    ("My homie to join me", "refer a friend"),
+    ("Share the love with my BFF benefits!", "refer a friend"),
+    ("Share awesome perks", "refer a friend"),
+    ("Compadres for cool rewards!", "refer a friend"),
+    ("Bring my buddies", "refer a friend"),
+    ("unlock exclusive deals with my homies", "refer a friend"),
+    ("Referral", "refer a friend"),
+]
+
+# ✅ Extract inputs and labels
+sample_inputs = [x[0] for x in test_data]
+true_labels = [x[1] for x in test_data]
+label_list = sorted(set(true_labels))
+
+# ✅ Predictions
+preds = model.predict(sample_inputs)
+pred_indices = [label_list.index(p) for p in preds]
+true_indices = [label_list.index(l) for l in true_labels]
+
+# ✅ Section Accuracy
+print("\n🔎 Section Accuracy:")
+for label in label_list:
+    indices = [i for i, true in enumerate(true_labels) if true == label]
+    correct = sum(1 for i in indices if preds[i] == true_labels[i])
+    print(f"{label}: {correct}/{len(indices)} correct")
+
+# ✅ Prediction Breakdown
+print("\n📝 Prediction Breakdown:")
+for i, (text, pred_str, true_str) in enumerate(zip(sample_inputs, preds, true_labels)):
+    correct = "✅" if pred_str == true_str else "❌"
+    print(f'{i+1:02d}. "{text}" → Predicted: {pred_str} | Expected: {true_str} {correct}')
+
+# ✅ Overall Accuracy
+total_correct = sum(1 for p, t in zip(preds, true_labels) if p == t)
+print(f"\n🎯 Overall Accuracy: {total_correct}/{len(test_data)} correct")
