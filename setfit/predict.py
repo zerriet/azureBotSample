@@ -205,7 +205,7 @@ for label in label_list:
     correct = sum(1 for i in indices if preds[i] == true_labels[i])
     print(f"{label}: {correct}/{len(indices)} correct")
 
-# ✅ Prediction Breakdown
+#  Prediction Breakdown
 print("\n Prediction Breakdown:")
 for i, (text, pred_str, true_str) in enumerate(zip(sample_inputs, preds, true_labels)):
     correct = "✅" if pred_str == true_str else "❌"
