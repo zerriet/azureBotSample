@@ -1,18 +1,18 @@
 import os
 from setfit import SetFitModel
 
-# ✅ Environment setup
+#  Environment setup
 os.environ["LC_ALL"] = "en_US.UTF-8"
 os.environ["LANG"] = "en_US.UTF-8"
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-# ✅ Load model
+#  Load model
 model_path = os.path.join(os.path.dirname(__file__), "setfit_model")
 model = SetFitModel._from_pretrained(model_id=model_path)
 
-# ✅ Full test data
+#  Full test data
 test_data = [
 
     # ---- Transaction History ----
@@ -188,17 +188,17 @@ test_data = [
     ("Referral", "refer a friend"),
 ]
 
-# ✅ Extract inputs and labels
+#  Extract inputs and labels
 sample_inputs = [x[0] for x in test_data]
-true_labels = [x[1] for x in test_data]
+true_labels = [x[1].replace(" ", "_") for x in test_data]
 label_list = sorted(set(true_labels))
 
-# ✅ Predictions
+#  Predictions
 preds = model.predict(sample_inputs)
 pred_indices = [label_list.index(p) for p in preds]
 true_indices = [label_list.index(l) for l in true_labels]
 
-# ✅ Section Accuracy
+# Section Accuracy
 print("\n Section Accuracy:")
 for label in label_list:
     indices = [i for i, true in enumerate(true_labels) if true == label]
@@ -211,6 +211,6 @@ for i, (text, pred_str, true_str) in enumerate(zip(sample_inputs, preds, true_la
     correct = "✅" if pred_str == true_str else "❌"
     print(f'{i+1:02d}. "{text}" → Predicted: {pred_str} | Expected: {true_str} {correct}')
 
-# ✅ Overall Accuracy
+# Overall Accuracy
 total_correct = sum(1 for p, t in zip(preds, true_labels) if p == t)
 print(f"\n🎯 Overall Accuracy: {total_correct}/{len(test_data)} correct")
