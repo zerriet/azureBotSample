@@ -82,11 +82,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-         <dependency>
-        <groupId>com.azure</groupId>
-        <artifactId>azure-ai-openai-assistants</artifactId>
-        <version>1.0.0-beta.3</version>
-        </dependency>
        <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -97,6 +92,50 @@
         <artifactId>dotenv-java</artifactId>
         <version>3.0.0</version>
     </dependency>
+    <!-- Azure SDK for Java -->
+    <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-identity</artifactId>
+        <version>1.4.0</version>
+    </dependency>
+    <!--HTTP components to make API calls-->
+    <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.5.13</version>
+    </dependency>
+    <!-- JSON library for parsing JSON responses -->
+    <dependency>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>20230227</version>
+    </dependency>
+    <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-ai-openai</artifactId>
+        <version>1.0.0-beta.12</version>
+    </dependency>
+
+
+<dependency>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-core</artifactId>
+      <version>1.44.0</version>
+    </dependency>
+    <!-- Remove or comment out this block I need to do this in order to deconflict this dependency with the one for Chat API -->
+<!--
+<dependency>
+    <groupId>com.azure</groupId>
+    <artifactId>azure-ai-openai-assistants</artifactId>
+    <version>1.0.0-beta.3</version>
+</dependency>
+-->
+    <dependency>
+  <groupId>commons-codec</groupId>
+  <artifactId>commons-codec</artifactId>
+  <version>1.15</version>
+</dependency>
+
     </dependencies>
 
     <build>
@@ -154,7 +193,7 @@
                 <configuration>
                     <schemaVersion>v2</schemaVersion>
                     <resourceGroup>bot-test</resourceGroup>
-                    <appName>ms-aria</appName>
+                    <appName>ms-pramit</appName>
                     <pricingTier>P1v2</pricingTier>
                     <region>southeastasia</region>
                     <runtime>
