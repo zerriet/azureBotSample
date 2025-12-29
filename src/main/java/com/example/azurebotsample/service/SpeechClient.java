@@ -13,6 +13,7 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.StringWriter;
@@ -24,14 +25,30 @@ import static com.microsoft.cognitiveservices.speech.util.SafeHandleType.AudioCo
 @Slf4j
 @NoArgsConstructor
 public class SpeechClient {
-    private final String speechSubscriptionKey = "5Clm4YR3KFhmDb1WfVa5cnTXPyDffNmxJsNC0RNcJWpfgu26yZWGJQQJ99BDACqBBLyXJ3w3AAAYACOGEj7V";
-    private final String resourceRegion = "southeastasia";
-    private final String endpointUrl = "https://southeastasia.api.cognitive.microsoft.com/";
-    private final String voiceModel = "en-SG-LunaNeural"; // trying out this to make it entirely eng
-    private final String lang = "en-SG"; // trying out this to make it entirely eng
-    private final String style = "customerservice";
-    private final String role = "Girl";
-    private final String styleDegree = "2";
+
+    @Value("${azure.speech.subscription-key}")
+    private String speechSubscriptionKey;
+
+    @Value("${azure.speech.region}")
+    private String resourceRegion;
+
+    @Value("${azure.speech.endpoint}")
+    private String endpointUrl;
+
+    @Value("${azure.speech.voice-model}")
+    private String voiceModel;
+
+    @Value("${azure.speech.language}")
+    private String lang;
+
+    @Value("${azure.speech.style}")
+    private String style;
+
+    @Value("${azure.speech.role}")
+    private String role;
+
+    @Value("${azure.speech.style-degree}")
+    private String styleDegree;
 
     public byte[] generateResponse(String responsePayload) {
         // Creates an instance of a speech synthesizer using speech configuration with

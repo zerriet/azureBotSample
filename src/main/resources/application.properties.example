@@ -1,0 +1,30 @@
+spring.application.name=azureBotSample
+
+# Azure OpenAI Configuration (Legacy - for reference)
+azure.openai.endpoint=https://YOUR_RESOURCE_NAME.openai.azure.com
+azure.openai.api-key=YOUR_OPENAI_API_KEY_HERE
+azure.openai.api-version=2024-05-01-preview
+azure.openai.vector-store=YOUR_VECTOR_STORE_ID
+
+# OpenAI API Configuration (Alternative)
+openai.api.endpoint=https://YOUR_RESOURCE_NAME.openai.azure.com
+openai.api.key=YOUR_OPENAI_API_KEY_HERE
+openai.api.version=2024-05-01-preview
+openai.vector_store=YOUR_VECTOR_STORE_ID
+openai.key=YOUR_ALTERNATIVE_KEY_HERE
+
+# Azure OpenAI Chat API Configuration (Active)
+azure.openai.endpoint=https://YOUR_RESOURCE_NAME.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2025-01-01-preview
+azure.openai.endpoint-sdk=https://YOUR_RESOURCE_NAME.openai.azure.com
+azure.openai.api-key=YOUR_OPENAI_API_KEY_HERE
+azure.openai.deployment-name=gpt-4o-mini
+
+# Azure Speech Services Configuration
+azure.speech.subscription-key=YOUR_SPEECH_API_KEY_HERE
+azure.speech.region=southeastasia
+azure.speech.endpoint=https://southeastasia.api.cognitive.microsoft.com/
+azure.speech.voice-model=en-SG-LunaNeural
+azure.speech.language=en-SG
+azure.speech.style=customerservice
+azure.speech.role=Girl
+azure.speech.style-degree=2

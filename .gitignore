@@ -32,6 +32,11 @@ build/
 ### VS Code ###
 .vscode/
 
+### Claude Code ###
+.claude/
+
+### Security - Sensitive Configuration Files ###
 application.properties
-# src/main/resources/application.properties
-# .env
+src/main/resources/application.properties
+.env
+*.env
