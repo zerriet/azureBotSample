@@ -720,6 +720,92 @@ graph TB
 
 ---
 
+## Simplified Architecture - Presentation Version
+
+A streamlined diagram perfect for quick presentations, removing technical details while maintaining the core dual-path concept.
+
+```mermaid
+graph TB
+    subgraph Client["Client Layer"]
+        UI["🌐 Web Browser<br/>Speech UI"]
+    end
+
+    subgraph Backend["Application Layer"]
+        API["📡 REST API"]
+        Security["🔒 PII Protection"]
+        Router{"🎯 Smart Router"}
+
+        subgraph Processing["Dual Processing Paths"]
+            Local["🤖 Local ML<br/><i>Quick Responses</i>"]
+            Cloud["☁️ Cloud AI<br/><i>Complex Queries</i>"]
+        end
+
+        TTS["🔊 Text-to-Speech"]
+    end
+
+    subgraph Azure["Azure Services"]
+        OpenAI["Azure OpenAI<br/>GPT-4o-mini"]
+        Speech["Azure Speech<br/>Neural TTS"]
+    end
+
+    UI -->|User Query| API
+    API --> Security
+    Security --> Router
+    Router -->|Simple| Local
+    Router -->|Complex| Cloud
+    Local --> TTS
+    Cloud -->|API Call| OpenAI
+    OpenAI --> Cloud
+    Cloud --> TTS
+    TTS -->|SSML| Speech
+    Speech -->|Audio| TTS
+    TTS -->|Response| API
+    API -->|Audio + Text| UI
+
+    %% Styling
+    style UI fill:#4A90E2,stroke:#2E5C8A,stroke-width:3px,color:#FFFFFF
+    style API fill:#F5A623,stroke:#C77B00,stroke-width:3px,color:#000000
+    style Security fill:#FF6B6B,stroke:#CC5555,stroke-width:3px,color:#FFFFFF
+    style Router fill:#BD10E0,stroke:#8B0AA8,stroke-width:3px,color:#FFFFFF
+    style Local fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000000
+    style Cloud fill:#50E3C2,stroke:#3AB09E,stroke-width:3px,color:#000000
+    style TTS fill:#F8E71C,stroke:#C4B616,stroke-width:3px,color:#000000
+    style OpenAI fill:#B8E986,stroke:#8FB865,stroke-width:3px,color:#000000
+    style Speech fill:#B8E986,stroke:#8FB865,stroke-width:3px,color:#000000
+
+    linkStyle default stroke:#333,stroke-width:2px
+```
+
+**Use Case**: Board presentations, stakeholder meetings, or quick technical overviews where detailed architecture would be too complex.
+
+---
+
+## Ultra-Minimal Architecture - Elevator Pitch Version
+
+The most condensed version for situations requiring maximum simplicity (business cards, LinkedIn posts, elevator pitches).
+
+```mermaid
+graph LR
+    User["👤 User"] -->|Voice/Text| App["🎯 Smart Assistant"]
+    App -->|Simple| Local["⚡ Local ML"]
+    App -->|Complex| Azure["☁️ Azure AI"]
+    Local --> Response["💬 Response"]
+    Azure --> Response
+    Response -->|Audio| User
+
+    style User fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#FFFFFF
+    style App fill:#F5A623,stroke:#C77B00,stroke-width:2px,color:#000000
+    style Local fill:#7ED321,stroke:#5FA319,stroke-width:2px,color:#000000
+    style Azure fill:#50E3C2,stroke:#3AB09E,stroke-width:2px,color:#000000
+    style Response fill:#F8E71C,stroke:#C4B616,stroke-width:2px,color:#000000
+```
+
+**Use Case**: Social media posts, portfolio thumbnails, or anywhere you need to explain the concept in under 10 seconds.
+
+**One-Line Pitch**: "Intelligent voice assistant that routes simple queries to local ML (instant, free) and complex queries to Azure AI (comprehensive, cloud-powered)."
+
+---
+
 ## Usage Notes
 
 ### For GitHub README
@@ -731,11 +817,23 @@ Copy the raw markdown code blocks and paste them into your README.md. GitHub wil
 3. **Recommended Diagram**: Use the "Resume-Ready Summary Diagram" for maximum impact in limited space
 
 ### For Presentations
-- **System Architecture Overview**: Best for technical deep-dives showing the complete system with intelligent routing
-- **Intelligent Routing Layer**: Showcases cost optimization strategy and hybrid architecture approach
-- **Request-Response Flow**: Excellent for explaining end-to-end functionality
-- **Cost Optimization Features**: Highlights business value and engineering thinking
-- **Resume-Ready Summary**: Perfect for quick overviews and elevator pitches - emphasizes ML/AI skills
+
+**Technical Deep-Dives** (20+ minute presentations):
+- **System Architecture Overview**: Complete system with dual-path routing and PII masking
+- **Intelligent Routing Layer**: Detailed cost optimization strategy with performance metrics
+- **Request-Response Flow**: End-to-end sequence diagram with all components
+
+**Standard Presentations** (10-15 minutes):
+- **Resume-Ready Summary**: High-level overview emphasizing key innovations and skills
+- **Simplified Architecture**: Clean presentation version without overwhelming detail
+
+**Quick Pitches** (2-5 minutes):
+- **Simplified Architecture**: Best for stakeholder meetings and technical overviews
+- **Ultra-Minimal Architecture**: Perfect for elevator pitches and social media
+
+**Business-Focused**:
+- **Cost Optimization Features**: Highlights ROI and business value
+- **Intelligent Routing Layer**: Shows concrete performance and cost metrics
 
 ### Customization Tips
 - Update colors by modifying `style` statements (e.g., `style A fill:#yourcolor`)

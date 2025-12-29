@@ -1,0 +1,49 @@
+graph TB
+    subgraph Client["Client Layer"]
+        UI["🌐 Web Browser<br/>Speech UI"]
+    end
+    
+    subgraph Backend["Application Layer"]
+        API["📡 REST API"]
+        Security["🔒 PII Protection"]
+        Router{"🎯 Smart Router"}
+        
+        subgraph Processing["Dual Processing Paths"]
+            Local["🤖 Local ML<br/><i>Quick Responses</i>"]
+            Cloud["☁️ Cloud AI<br/><i>Complex Queries</i>"]
+        end
+        
+        TTS["🔊 Text-to-Speech"]
+    end
+    
+    subgraph Azure["Azure Services"]
+        OpenAI["Azure OpenAI<br/>GPT-4o-mini"]
+        Speech["Azure Speech<br/>Neural TTS"]
+    end
+    
+    UI -->|User Query| API
+    API --> Security
+    Security --> Router
+    Router -->|Simple| Local
+    Router -->|Complex| Cloud
+    Local --> TTS
+    Cloud -->|API Call| OpenAI
+    OpenAI --> Cloud
+    Cloud --> TTS
+    TTS -->|SSML| Speech
+    Speech -->|Audio| TTS
+    TTS -->|Response| API
+    API -->|Audio + Text| UI
+    
+    %% Styling
+    style UI fill:#4A90E2,stroke:#2E5C8A,stroke-width:3px,color:#FFFFFF
+    style API fill:#F5A623,stroke:#C77B00,stroke-width:3px,color:#000000
+    style Security fill:#FF6B6B,stroke:#CC5555,stroke-width:3px,color:#FFFFFF
+    style Router fill:#BD10E0,stroke:#8B0AA8,stroke-width:3px,color:#FFFFFF
+    style Local fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000000
+    style Cloud fill:#50E3C2,stroke:#3AB09E,stroke-width:3px,color:#000000
+    style TTS fill:#F8E71C,stroke:#C4B616,stroke-width:3px,color:#000000
+    style OpenAI fill:#B8E986,stroke:#8FB865,stroke-width:3px,color:#000000
+    style Speech fill:#B8E986,stroke:#8FB865,stroke-width:3px,color:#000000
+    
+    linkStyle default stroke:#333,stroke-width:2px

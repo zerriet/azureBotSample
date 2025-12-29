@@ -1,0 +1,13 @@
+graph LR
+    User["👤 User"] -->|Voice/Text| App["🎯 Smart Assistant"]
+    App -->|Simple| Local["⚡ Local ML"]
+    App -->|Complex| Azure["☁️ Azure AI"]
+    Local --> Response["💬 Response"]
+    Azure --> Response
+    Response -->|Audio| User
+    
+    style User fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#FFFFFF
+    style App fill:#F5A623,stroke:#C77B00,stroke-width:2px,color:#000000
+    style Local fill:#7ED321,stroke:#5FA319,stroke-width:2px,color:#000000
+    style Azure fill:#50E3C2,stroke:#3AB09E,stroke-width:2px,color:#000000
+    style Response fill:#F8E71C,stroke:#C4B616,stroke-width:2px,color:#000000
