@@ -6,7 +6,7 @@ This document contains Mermaid diagrams that visualize the system architecture, 
 
 ## System Architecture Overview
 
-This high-level diagram shows the overall system architecture and how components interact, including the intelligent routing layer that optimizes costs through local ML processing and vector search.
+This high-level diagram shows the overall system architecture with dual-path routing: deterministic (local ML) and probabilistic (vector DB + cloud fallback), with PII masking at the security boundary.
 
 ```mermaid
 graph TB
@@ -17,54 +17,67 @@ graph TB
     subgraph "Application Layer - Spring Boot"
         Controller["📡 AzureChatAPIController<br/>REST API Endpoint"]
 
-        subgraph "Intelligence Layer - Cost Optimization"
-            Router{"🎯 Intent Router<br/>Deterministic Check"}
-            LocalML["🤖 Local ML Model<br/>Keyword/Semantic Matcher"]
-            Embedding["🔢 Embedding Model<br/>Vector Encoder"]
-            VectorDB[("📚 Vector Database<br/>Semantic Search<br/><i>Finance Literacy KB</i>")]
+        subgraph "Security Layer"
+            PIIMask["🔒 PII Masking<br/>ML-Regex Hybrid<br/><i>Bank Data Protection</i>"]
         end
 
-        ChatService["💬 AzureChatAPIService<br/>Conversation Logic"]
+        subgraph "Intelligence Layer - Dual Path Routing"
+            Router{"🎯 Intent Router"}
+
+            subgraph "Path 1: Deterministic - Local"
+                LocalML["🤖 Local ML Model<br/>Keyword/Semantic Matcher"]
+            end
+
+            subgraph "Path 2: Probabilistic - Cloud"
+                Embedding["🔢 Embedding Model<br/>Vector Encoder"]
+                VectorDB[("📚 Vector Database<br/>Semantic Search<br/><i>Finance Literacy KB</i>")]
+                ChatService["💬 AzureChatAPIService<br/>Conversation Logic"]
+                Memory["💾 ChatMemory<br/>Context Manager"]
+            end
+        end
+
         SpeechService["🔊 SpeechClient<br/>TTS Synthesis"]
-        Memory["💾 ChatMemory<br/>Context Manager"]
     end
 
-    subgraph "Azure Cloud Services - Fallback"
-        OpenAI["☁️ Azure OpenAI<br/>GPT-4o-mini<br/><i>Probabilistic Fallback</i>"]
+    subgraph "Azure Cloud Services"
+        OpenAI["☁️ Azure OpenAI<br/>GPT-4o-mini"]
         Speech["🎙️ Azure Speech Services<br/>Neural TTS"]
     end
 
     UI -->|"POST /api/chat"| Controller
-    Controller -->|"1. Base64 Decode"| Router
+    Controller -->|"1. Decode Input"| PIIMask
+    PIIMask -->|"2. Masked Input"| Router
 
-    Router -->|"2a. Check Intent"| LocalML
-    Router -->|"2b. Generate Embedding"| Embedding
+    Router -->|"Deterministic<br/>Specific Intent"| LocalML
+    Router -->|"Probabilistic<br/>Complex Query"| Embedding
 
-    LocalML -->|"Match Found<br/>💰 Cost Saved"| VectorDB
-    LocalML -->|"No Match<br/>Route to Cloud"| ChatService
+    LocalML -->|"✓ Match Found<br/>💰 Local Response"| SpeechService
 
     Embedding --> VectorDB
-    VectorDB -->|"Semantic Answer<br/>💰 Cost Saved"| Controller
+    VectorDB -->|"KB Hit"| SpeechService
+    VectorDB -->|"No Match<br/>Fallback"| ChatService
 
-    Controller --> SpeechService
     ChatService --> Memory
     ChatService -->|"SDK/REST API<br/>☁️ Cloud Call"| OpenAI
-    SpeechService -->|"SSML"| Speech
     OpenAI -->|"Text Response"| ChatService
+    ChatService -->|"AI Response"| SpeechService
+
+    SpeechService -->|"SSML"| Speech
     Speech -->|"WAV Audio"| SpeechService
-    ChatService -->|"Response Text"| Controller
+    SpeechService -->|"Text + Audio"| Controller
     Controller -->|"JSON + Base64 Audio"| UI
 
     %% Styling for visibility in both light and dark modes
     style UI fill:#4A90E2,stroke:#2E5C8A,stroke-width:3px,color:#FFFFFF
     style Controller fill:#F5A623,stroke:#C77B00,stroke-width:3px,color:#000000
+    style PIIMask fill:#FF6B6B,stroke:#CC5555,stroke-width:3px,color:#FFFFFF
     style Router fill:#BD10E0,stroke:#8B0AA8,stroke-width:3px,color:#FFFFFF
     style LocalML fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000000
-    style Embedding fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000000
+    style Embedding fill:#A8DADC,stroke:#7EADB0,stroke-width:3px,color:#000000
     style VectorDB fill:#50E3C2,stroke:#3AB09E,stroke-width:3px,color:#000000
     style ChatService fill:#F8E71C,stroke:#C4B616,stroke-width:3px,color:#000000
     style SpeechService fill:#F8E71C,stroke:#C4B616,stroke-width:3px,color:#000000
-    style Memory fill:#F8E71C,stroke:#C4B616,stroke-width:3px,color:#000000
+    style Memory fill:#FFE66D,stroke:#CCB857,stroke-width:3px,color:#000000
     style OpenAI fill:#B8E986,stroke:#8FB865,stroke-width:3px,color:#000000
     style Speech fill:#B8E986,stroke:#8FB865,stroke-width:3px,color:#000000
 
@@ -126,42 +139,75 @@ sequenceDiagram
 
 ## Data Flow Architecture
 
-This diagram focuses on data transformation through the system layers.
+This diagram focuses on data transformation through the dual-path system with PII masking at the security boundary.
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph Input
-        A[User Input<br/>Text/Voice]
+        A["User Input<br/>Text/Voice"]
     end
 
-    subgraph "Processing Pipeline"
-        B[Input Validation<br/>Base64 Filter]
-        C[Context Assembly<br/>Last 3 Messages]
-        D[OpenAI Processing<br/>GPT-4o-mini]
-        E[Response Storage<br/>Memory Update]
-        F[Speech Synthesis<br/>SSML + TTS]
-        G[Audio Encoding<br/>Base64]
+    subgraph "Security Boundary"
+        B["Base64 Decode"]
+        C["PII Masking<br/>ML-Regex Hybrid<br/>🏦 Bank Data Protection"]
     end
 
-    subgraph Output
-        H[Dual Response<br/>Text + Audio]
+    subgraph "Routing Layer"
+        D{"Intent Router<br/>Deterministic vs<br/>Probabilistic"}
+    end
+
+    subgraph "Path 1: Local ML Processing"
+        E["Local ML Model<br/>Intent Matching"]
+        F["Predefined Response<br/>💰 Zero Cost"]
+    end
+
+    subgraph "Path 2: Probabilistic Processing"
+        G["Embedding Model<br/>Vector Encoding"]
+        H["Vector DB Search<br/>Finance KB"]
+        I{"KB Hit?"}
+        J["Context Assembly<br/>Last 3 Messages"]
+        K["Azure OpenAI<br/>GPT-4o-mini<br/>💸 Per-Token Cost"]
+    end
+
+    subgraph "Output Generation"
+        L["Text-to-Speech<br/>Azure TTS<br/>SSML + WAV"]
+        M["Response Package<br/>Text + Base64 Audio"]
     end
 
     A --> B
-    B -->|Valid Text| C
-    B -.->|Rejected| X[Skipped<br/>PII Protection]
+    B --> C
     C --> D
-    D --> E
-    E --> F
-    F --> G
-    G --> H
 
-    style A fill:#e8f5e9
-    style H fill:#e8f5e9
-    style B fill:#fff3e0
-    style X fill:#ffebee
-    style D fill:#e3f2fd
-    style F fill:#f3e5f5
+    D -->|"Specific Intent"| E
+    E --> F
+    F --> L
+
+    D -->|"Complex Query"| G
+    G --> H
+    H --> I
+    I -->|"✓ Match"| L
+    I -->|"✗ Fallback"| J
+    J --> K
+    K --> L
+
+    L --> M
+
+    %% High-visibility styling
+    style A fill:#4A90E2,stroke:#2E5C8A,stroke-width:3px,color:#FFFFFF
+    style B fill:#A8DADC,stroke:#7EADB0,stroke-width:2px,color:#000000
+    style C fill:#FF6B6B,stroke:#CC5555,stroke-width:4px,color:#FFFFFF
+    style D fill:#BD10E0,stroke:#8B0AA8,stroke-width:3px,color:#FFFFFF
+    style E fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000000
+    style F fill:#B8E986,stroke:#8FB865,stroke-width:2px,color:#000000
+    style G fill:#A8DADC,stroke:#7EADB0,stroke-width:3px,color:#000000
+    style H fill:#50E3C2,stroke:#3AB09E,stroke-width:3px,color:#000000
+    style I fill:#FFE66D,stroke:#CCB857,stroke-width:2px,color:#000000
+    style J fill:#FFE66D,stroke:#CCB857,stroke-width:3px,color:#000000
+    style K fill:#F5A623,stroke:#C77B00,stroke-width:3px,color:#000000
+    style L fill:#A8DADC,stroke:#7EADB0,stroke-width:3px,color:#000000
+    style M fill:#457B9D,stroke:#345A72,stroke-width:3px,color:#FFFFFF
+
+    linkStyle default stroke:#333,stroke-width:2px
 ```
 
 ---
@@ -218,68 +264,82 @@ graph TD
 
 ## Intelligent Routing Layer - Cost Optimization Strategy
 
-This diagram details the corporate implementation's intelligent routing mechanism that minimizes cloud API costs through local ML processing and vector search.
+This diagram details the dual-path routing mechanism with PII masking at the security boundary: Path 1 (Deterministic/Local) and Path 2 (Probabilistic/Cloud with Vector DB + OpenAI fallback).
 
 ```mermaid
 flowchart TD
-    Start["📥 User Input Received<br/>(Base64 Decoded)"] --> Router{"🎯 Intent Router<br/>Deterministic Analysis"}
+    Start["📥 User Input Received<br/>(Base64 Decoded)"] --> PIIMask["🔒 PII Masking Layer<br/>ML-Regex Hybrid Model"]
 
-    subgraph "Local Processing - Cost Saving Layer"
-        Router -->|"Path 1"| LocalML["🤖 Local ML Model<br/>Keyword & Semantic Matcher"]
-        Router -->|"Path 2<br/>(Parallel)"| Embedding["🔢 Embedding Model<br/>Vector Encoding"]
+    PIIMask -->|"Masked Input<br/>🏦 Bank Data Protected"| Router{"🎯 Intent Router<br/>Route Decision"}
 
+    subgraph "Path 1: Deterministic - Local ML (Fast & Free)"
+        Router -->|"Specific Intent<br/>Recognized"| LocalML["🤖 Local ML Model<br/>Keyword & Semantic Matcher"]
         LocalML --> IntentCheck{"Intent<br/>Matched?"}
-
-        IntentCheck -->|"✓ Specific Intent Found"| VectorSearch["📚 Vector Database Query<br/>Semantic Search"]
-        Embedding --> VectorSearch
-
-        VectorSearch --> KBCheck{"Knowledge<br/>Base Hit?"}
-
-        KBCheck -->|"✓ Answer Found<br/>Finance Literacy/FAQ"| LocalResponse["✅ Return Cached Answer<br/>💰 Zero Cloud Cost"]
+        IntentCheck -->|"✓ Match Found"| LocalResponse["✅ Return Predefined Answer<br/>💰 Zero Cloud Cost<br/>⚡ <100ms Response"]
     end
 
-    subgraph "Cloud Fallback - Comprehensive Processing"
-        IntentCheck -->|"✗ No Match<br/>Vague/Complex Query"| CloudRoute["☁️ Route to Azure OpenAI"]
-        KBCheck -->|"✗ No Match"| CloudRoute
+    subgraph "Path 2: Probabilistic - Cloud Processing (Comprehensive)"
+        Router -->|"Complex/Vague<br/>Query"| Embedding["🔢 Embedding Model<br/>Vector Encoding"]
 
-        CloudRoute --> ContextAssembly["💾 Assemble Chat Context<br/>Last 3 Messages"]
+        Embedding --> VectorDB[("📚 Vector Database<br/>Semantic Search<br/><i>Finance Literacy KB</i>")]
+
+        VectorDB --> KBCheck{"Knowledge<br/>Base Hit?"}
+
+        KBCheck -->|"✓ Answer Found"| VectorResponse["✅ Return KB Answer<br/>💰 Low Cost<br/>⚡ <500ms Response"]
+
+        KBCheck -->|"✗ No Match<br/>OpenAI Fallback"| ContextAssembly["💾 ChatMemory<br/>Assemble Last 3 Messages"]
+
         ContextAssembly --> OpenAI["🤖 Azure OpenAI API<br/>GPT-4o-mini<br/>💸 Per-Token Cost"]
-        OpenAI --> CloudResponse["✅ AI-Generated Response"]
+        OpenAI --> CloudResponse["✅ AI-Generated Response<br/>💸 Full Cost<br/>~2s Response"]
     end
+
+    IntentCheck -->|"✗ No Match<br/>Route to Path 2"| Embedding
 
     LocalResponse --> TTS["🔊 Text-to-Speech<br/>Azure Speech Services"]
+    VectorResponse --> TTS
     CloudResponse --> TTS
-    TTS --> Output["📤 JSON Response<br/>Text + Audio"]
+    TTS --> Output["📤 JSON Response<br/>Text + Base64 Audio"]
 
-    %% Annotations
-    LocalML -.->|"Examples:<br/>• 'What is compound interest?'<br/>• 'Define inflation'<br/>• 'Calculate loan payment'"| Note1[ ]
-    CloudRoute -.->|"Examples:<br/>• Open-ended questions<br/>• Multi-step reasoning<br/>• Conversational context"| Note2[ ]
+    %% Annotations with examples
+    LocalML -.->|"Examples:<br/>• 'Define compound interest'<br/>• 'What is APR?'<br/>• 'Calculate 5% of 1000'"| Note1[ ]
+    VectorDB -.->|"Examples:<br/>• 'How to save for retirement?'<br/>• 'Explain mortgage types'<br/>• Finance quiz questions"| Note2[ ]
+    OpenAI -.->|"Examples:<br/>• Open-ended discussions<br/>• Multi-step reasoning<br/>• Conversational follow-ups"| Note3[ ]
 
     %% High-visibility styling
     style Start fill:#4A90E2,stroke:#2E5C8A,stroke-width:3px,color:#FFFFFF
+    style PIIMask fill:#FF6B6B,stroke:#CC5555,stroke-width:4px,color:#FFFFFF
     style Router fill:#BD10E0,stroke:#8B0AA8,stroke-width:3px,color:#FFFFFF
     style LocalML fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000000
-    style Embedding fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000000
-    style VectorSearch fill:#50E3C2,stroke:#3AB09E,stroke-width:3px,color:#000000
     style LocalResponse fill:#B8E986,stroke:#8FB865,stroke-width:3px,color:#000000
-    style CloudRoute fill:#F5A623,stroke:#C77B00,stroke-width:3px,color:#000000
+    style Embedding fill:#A8DADC,stroke:#7EADB0,stroke-width:3px,color:#000000
+    style VectorDB fill:#50E3C2,stroke:#3AB09E,stroke-width:3px,color:#000000
+    style VectorResponse fill:#B8E986,stroke:#8FB865,stroke-width:3px,color:#000000
+    style ContextAssembly fill:#FFE66D,stroke:#CCB857,stroke-width:3px,color:#000000
     style OpenAI fill:#FF6B6B,stroke:#CC5555,stroke-width:3px,color:#FFFFFF
-    style CloudResponse fill:#B8E986,stroke:#8FB865,stroke-width:3px,color:#000000
+    style CloudResponse fill:#F5A623,stroke:#C77B00,stroke-width:3px,color:#000000
     style TTS fill:#A8DADC,stroke:#7EADB0,stroke-width:3px,color:#000000
     style Output fill:#457B9D,stroke:#345A72,stroke-width:3px,color:#FFFFFF
     style IntentCheck fill:#FFE66D,stroke:#CCB857,stroke-width:2px,color:#000000
     style KBCheck fill:#FFE66D,stroke:#CCB857,stroke-width:2px,color:#000000
     style Note1 fill:none,stroke:none
     style Note2 fill:none,stroke:none
+    style Note3 fill:none,stroke:none
 
     linkStyle default stroke:#333,stroke-width:2px
 ```
 
 **Key Benefits:**
-- **Cost Reduction**: 70-90% reduction in Azure OpenAI API calls for common queries
-- **Performance**: Sub-second response for cached/deterministic queries
-- **Scalability**: Local processing handles high-volume, repetitive questions
-- **Use Cases**: Finance literacy education, FAQ handling, transaction-specific intents
+- **Security First**: PII masking protects confidential bank data before any processing
+- **Cost Reduction**: 70-90% reduction in Azure OpenAI API calls through dual-path routing
+- **Performance Tiers**:
+  - Path 1 (Local ML): <100ms response, zero cloud cost
+  - Path 2a (Vector DB): <500ms response, minimal cost
+  - Path 2b (OpenAI): ~2s response, full per-token cost
+- **Scalability**: Local and vector processing handles high-volume, repetitive questions
+- **Use Cases**:
+  - Path 1: Transaction intents, simple definitions, calculations
+  - Path 2a: Finance literacy education, FAQ retrieval, quiz answers
+  - Path 2b: Complex reasoning, conversational AI, open-ended queries
 
 ---
 
@@ -579,69 +639,84 @@ graph TD
 
 ## Resume-Ready Summary Diagram
 
-A concise, high-impact diagram perfect for portfolio presentations that showcases the intelligent routing architecture.
+A concise, high-impact diagram perfect for portfolio presentations showcasing the dual-path intelligent routing architecture with PII protection.
 
 ```mermaid
 graph TB
-    subgraph "🎯 Speech-to-Transaction AI Agent with Intelligent Routing"
+    subgraph "🎯 Speech-to-Transaction AI Agent - Dual Path Architecture"
         Input["🎤 Voice/Text Input<br/>Speech Recognition"]
-        Router{"🧠 Smart Router<br/>Local ML + Vector DB"}
-        Local["⚡ Cached Response<br/>70-90% Cost Saved"]
-        Cloud["☁️ Azure OpenAI<br/>Complex Queries"]
+        PII["🔒 PII Masking<br/>ML-Regex Hybrid"]
+        Router{"🧠 Smart Router<br/>Dual Path Decision"}
+
+        subgraph "Path 1: Local"
+            Local["⚡ Local ML<br/>Deterministic<br/>💰 Zero Cost"]
+        end
+
+        subgraph "Path 2: Cloud"
+            Vector["📚 Vector DB<br/>Semantic Search"]
+            OpenAI["☁️ Azure OpenAI<br/>AI Fallback"]
+        end
+
         Output["🔊 Voice Output<br/>Neural TTS"]
     end
 
     subgraph "💡 Key Innovations"
-        I1["💰 Multi-Layer Cost Optimization<br/>Local ML → Vector DB → Cloud Fallback"]
-        I2["🔒 Security & Compliance<br/>PII Filtering • Base64 Detection"]
-        I3["📚 Knowledge Base Integration<br/>Finance Literacy • Vector Embeddings"]
-        I4["🎛️ Hybrid Architecture<br/>On-Premise ML + Cloud AI"]
+        I1["🏦 Security-First Design<br/>PII Masking • Bank Data Protection"]
+        I2["💰 Multi-Tier Cost Optimization<br/>Local ML → Vector DB → OpenAI"]
+        I3["📚 Hybrid Knowledge Architecture<br/>Embeddings • 10K+ Finance Q&A"]
+        I4["⚡ Performance Tiers<br/><100ms (Local) • <500ms (Vector) • ~2s (AI)"]
     end
 
-    subgraph "🛠️ Technical Skills"
-        T1["☕ Spring Boot • Java 21<br/>RESTful Microservices"]
-        T2["☁️ Azure AI Services<br/>OpenAI • Speech • Cognitive"]
-        T3["🤖 ML Engineering<br/>Embeddings • Vector Search • NLP"]
-        T4["🏗️ System Architecture<br/>SDK/REST Dual Integration"]
+    subgraph "🛠️ Technical Skills Demonstrated"
+        T1["☕ Backend Engineering<br/>Spring Boot • Java 21 • REST APIs"]
+        T2["☁️ Cloud Architecture<br/>Azure OpenAI • Speech • Cognitive Services"]
+        T3["🤖 ML/AI Engineering<br/>Local Models • Vector DB • Embeddings • NLP"]
+        T4["🏗️ System Design<br/>Dual-Path Routing • Hybrid On-Prem/Cloud"]
     end
 
-    Input --> Router
-    Router -->|"Match Found"| Local
-    Router -->|"Fallback"| Cloud
+    Input --> PII
+    PII --> Router
+    Router -->|"Specific Intent"| Local
+    Router -->|"Complex Query"| Vector
+    Vector -->|"No Match"| OpenAI
     Local --> Output
-    Cloud --> Output
+    Vector --> Output
+    OpenAI --> Output
 
-    I1 -.->|"Drives"| Router
-    I2 -.->|"Secures"| Input
-    I3 -.->|"Powers"| Local
-    I4 -.->|"Enables"| Router
+    I1 -.->|"Secures"| PII
+    I2 -.->|"Drives"| Router
+    I3 -.->|"Powers"| Vector
+    I4 -.->|"Optimizes"| Router
 
     %% High-contrast styling for both light and dark modes
     style Input fill:#4A90E2,stroke:#2E5C8A,stroke-width:3px,color:#FFFFFF
+    style PII fill:#FF6B6B,stroke:#CC5555,stroke-width:4px,color:#FFFFFF
     style Router fill:#BD10E0,stroke:#8B0AA8,stroke-width:3px,color:#FFFFFF
     style Local fill:#7ED321,stroke:#5FA319,stroke-width:3px,color:#000000
-    style Cloud fill:#F5A623,stroke:#C77B00,stroke-width:3px,color:#000000
-    style Output fill:#FF6B6B,stroke:#CC5555,stroke-width:3px,color:#FFFFFF
+    style Vector fill:#50E3C2,stroke:#3AB09E,stroke-width:3px,color:#000000
+    style OpenAI fill:#F5A623,stroke:#C77B00,stroke-width:3px,color:#000000
+    style Output fill:#A8DADC,stroke:#7EADB0,stroke-width:3px,color:#000000
 
     style I1 fill:#FFE66D,stroke:#CCB857,stroke-width:2px,color:#000000
     style I2 fill:#FFE66D,stroke:#CCB857,stroke-width:2px,color:#000000
     style I3 fill:#FFE66D,stroke:#CCB857,stroke-width:2px,color:#000000
     style I4 fill:#FFE66D,stroke:#CCB857,stroke-width:2px,color:#000000
 
-    style T1 fill:#A8DADC,stroke:#7EADB0,stroke-width:2px,color:#000000
-    style T2 fill:#A8DADC,stroke:#7EADB0,stroke-width:2px,color:#000000
-    style T3 fill:#A8DADC,stroke:#7EADB0,stroke-width:2px,color:#000000
-    style T4 fill:#A8DADC,stroke:#7EADB0,stroke-width:2px,color:#000000
+    style T1 fill:#B8E986,stroke:#8FB865,stroke-width:2px,color:#000000
+    style T2 fill:#B8E986,stroke:#8FB865,stroke-width:2px,color:#000000
+    style T3 fill:#B8E986,stroke:#8FB865,stroke-width:2px,color:#000000
+    style T4 fill:#B8E986,stroke:#8FB865,stroke-width:2px,color:#000000
 
     linkStyle default stroke:#333,stroke-width:2px
 ```
 
 **Portfolio Talking Points:**
-- Designed and implemented intelligent routing layer reducing cloud API costs by **70-90%**
-- Integrated local ML model with vector database for **sub-second response times** on common queries
-- Built hybrid architecture balancing **cost efficiency** (on-premise) with **flexibility** (cloud fallback)
-- Applied **semantic search** and **embeddings** for finance literacy knowledge base with 10,000+ Q&A pairs
-- Architected **multi-tier decision system**: Local ML → Vector DB → Azure OpenAI → Speech Services
+- Architected **dual-path intelligent routing** system reducing cloud API costs by **70-90%**
+- Implemented **PII masking layer** using ML-Regex hybrid model protecting confidential bank data
+- Designed **3-tier performance architecture**: Local ML (<100ms) → Vector DB (<500ms) → Azure OpenAI (~2s)
+- Integrated **vector embeddings** and semantic search for 10,000+ finance literacy Q&A knowledge base
+- Built **hybrid on-premise/cloud system** balancing cost efficiency with AI flexibility
+- **Tech Stack**: Spring Boot, Azure AI (OpenAI, Speech), Local ML Models, Vector Databases, RESTful APIs
 
 ---
 
