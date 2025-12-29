@@ -318,8 +318,8 @@ This project is a demonstration POC. Contact the maintainer for licensing inform
 ## 👤 Author
 
 **Mark Tan**
-- Portfolio: [Your Portfolio URL]
-- LinkedIn: [Your LinkedIn URL]
+- Portfolio: 
+- LinkedIn: [mark_tan](https://www.linkedin.com/in/mark-tan-jen-wei/)
 - GitHub: [@zerriet](https://github.com/zerriet)
 
 ## 🙏 Acknowledgments
